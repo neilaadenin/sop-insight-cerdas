@@ -11,7 +11,7 @@ export const kategoris: Kategori[] = [
 
 export const sops: SOP[] = [
   {
-    id: '1',
+    id: 'sop-1',
     judul: 'SOP Rekrutmen HR v3',
     kategori: 'SDM & Organisasi',
     departemen: 'HR',
@@ -19,7 +19,7 @@ export const sops: SOP[] = [
     versi: 'v3.0',
     diunggah_oleh: 'Indira Kamila',
     tanggal: '2025-07-10',
-    ringkasan: 'Proses seleksi dan onboarding karyawan baru untuk seluruh unit HR. Mencakup tahapan dari posting lowongan hingga orientasi karyawan.',
+    ringkasan: 'Proses seleksi dan onboarding karyawan baru untuk seluruh unit HR. Mencakup tahapan dari posting lowongan hingga orientasi karyawan dengan background check.',
     file: 'sop_rekrutmen_hr_v3.pdf',
     riwayat_versi: [
       { versi: 'v1.0', diunggah_oleh: 'Indira Kamila', tanggal: '2025-06-01', perubahan: 'Upload awal', file: 'sop_rekrutmen_hr_v1.pdf' },
@@ -28,7 +28,7 @@ export const sops: SOP[] = [
     ]
   },
   {
-    id: '2',
+    id: 'sop-2',
     judul: 'SOP Penggajian Bulanan v2.2',
     kategori: 'Keuangan & Audit',
     departemen: 'Keuangan',
@@ -45,7 +45,7 @@ export const sops: SOP[] = [
     ]
   },
   {
-    id: '3',
+    id: 'sop-3',
     judul: 'SOP Pengajuan Lembur v2.0',
     kategori: 'SDM & Organisasi',
     departemen: 'HR',
@@ -57,7 +57,7 @@ export const sops: SOP[] = [
     file: 'sop_lembur_v2.pdf'
   },
   {
-    id: '4',
+    id: 'sop-4',
     judul: 'SOP Keamanan IT v1.5',
     kategori: 'IT & Keamanan',
     departemen: 'IT',
@@ -69,7 +69,7 @@ export const sops: SOP[] = [
     file: 'sop_keamanan_it_v1_5.pdf'
   },
   {
-    id: '5',
+    id: 'sop-5',
     judul: 'SOP Audit Internal v3.1',
     kategori: 'Keuangan & Audit',
     departemen: 'Keuangan',
@@ -88,13 +88,13 @@ export const chatMessages: ChatMessage[] = [
     pesan: 'SOP lembur karyawan gimana?',
     jawaban: 'Ditemukan: SOP Pengajuan Lembur v2.0. Ringkasan: Formulir pengajuan lembur harus disetujui atasan & HR sebelum dilakukan. Maksimal 4 jam per hari.',
     timestamp: '2025-07-22 10:30',
-    sop_terkait: '3'
+    sop_terkait: 'sop-3'
   },
   {
     id: '2',
     pesan: 'Bagaimana proses rekrutmen karyawan baru?',
     jawaban: 'Ditemukan: SOP Rekrutmen HR v3. Mencakup tahapan dari posting lowongan, seleksi berkas, interview, background check hingga orientasi karyawan.',
     timestamp: '2025-07-22 11:15',
-    sop_terkait: '1'
+    sop_terkait: 'sop-1'
   }
 ];

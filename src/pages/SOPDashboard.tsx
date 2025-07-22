@@ -2,15 +2,19 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Search, Filter, ChevronRight, ChevronDown } from 'lucide-react';
 import SOPCard from '@/components/SOPCard';
 import { sops, kategoris } from '@/data/sampleData';
 import { SOP } from '@/types/sop';
+import { useNavigate } from 'react-router-dom';
 
 const SOPDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('all');
   const [selectedDepartemen, setSelectedDepartemen] = useState('all');
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   const departemens = ['HR', 'Keuangan', 'IT', 'Produksi', 'Umum'];
 
@@ -24,14 +28,35 @@ const SOPDashboard: React.FC = () => {
   });
 
   const handleViewSOP = (sop: SOP) => {
-    console.log('Viewing SOP:', sop.judul);
-    // TODO: Implement SOP viewer modal
+    navigate(`/sop/${sop.id}`);
   };
 
   const handleViewHistory = (sop: SOP) => {
-    console.log('Viewing history for:', sop.judul);
-    // TODO: Implement history modal
+    navigate(`/sop/${sop.id}`);
   };
+
+  const toggleCategory = (categoryName: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryName) 
+        ? prev.filter(c => c !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
+  const groupSOPsByCategory = () => {
+    const grouped: { [key: string]: SOP[] } = {};
+    
+    filteredSOPs.forEach(sop => {
+      if (!grouped[sop.kategori]) {
+        grouped[sop.kategori] = [];
+      }
+      grouped[sop.kategori].push(sop);
+    });
+    
+    return grouped;
+  };
+
+  const groupedSOPs = groupSOPsByCategory();
 
   return (
     <div className="p-6 space-y-6">
@@ -86,27 +111,62 @@ const SOPDashboard: React.FC = () => {
         </Select>
       </div>
 
-      {/* SOP Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSOPs.map(sop => (
-          <SOPCard
-            key={sop.id}
-            sop={sop}
-            onView={handleViewSOP}
-            onViewHistory={handleViewHistory}
-          />
-        ))}
+      {/* SOP Categories */}
+      <div className="space-y-4">
+        {Object.keys(groupedSOPs).length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg">Tidak ada SOP yang ditemukan</p>
+              <p className="text-sm">Coba ubah kata kunci pencarian atau filter</p>
+            </div>
+          </div>
+        ) : (
+          Object.entries(groupedSOPs).map(([categoryName, sops]) => {
+            const kategori = kategoris.find(k => k.nama === categoryName);
+            const isExpanded = expandedCategories.includes(categoryName);
+            
+            return (
+              <Collapsible 
+                key={categoryName}
+                open={isExpanded}
+                onOpenChange={() => toggleCategory(categoryName)}
+              >
+                <CollapsibleTrigger className="w-full">
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      {isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      <span className="text-2xl">{kategori?.icon}</span>
+                      <span className="font-semibold text-left">{categoryName}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {sops.length} SOP
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 pl-8">
+                    {sops.map(sop => (
+                      <SOPCard
+                        key={sop.id}
+                        sop={sop}
+                        onView={handleViewSOP}
+                        onViewHistory={handleViewHistory}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })
+        )}
       </div>
 
-      {filteredSOPs.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-muted-foreground">
-            <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Tidak ada SOP yang ditemukan</p>
-            <p className="text-sm">Coba ubah kata kunci pencarian atau filter</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

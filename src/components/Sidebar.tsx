@@ -22,12 +22,6 @@ const Sidebar: React.FC = () => {
       forAll: true 
     },
     { 
-      to: '/chatbot', 
-      icon: MessageCircle, 
-      label: 'Asisten SOP', 
-      forAll: true 
-    },
-    { 
       to: '/upload', 
       icon: Upload, 
       label: 'Unggah SOP Baru', 

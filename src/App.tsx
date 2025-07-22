@@ -8,6 +8,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import SOPDashboard from "@/pages/SOPDashboard";
+import SOPDetail from "@/pages/SOPDetail";
+import UploadSOP from "@/pages/UploadSOP";
+import CategoryManager from "@/pages/CategoryManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,9 +29,9 @@ const App = () => (
               <main className="flex-1 overflow-auto">
                 <Routes>
                   <Route path="/" element={<SOPDashboard />} />
-                  <Route path="/chatbot" element={<div className="p-6">Chatbot coming soon...</div>} />
-                  <Route path="/upload" element={<div className="p-6">Upload SOP coming soon...</div>} />
-                  <Route path="/categories" element={<div className="p-6">Manage Categories coming soon...</div>} />
+                  <Route path="/sop/:id" element={<SOPDetail />} />
+                  <Route path="/upload" element={<UploadSOP />} />
+                  <Route path="/categories" element={<CategoryManager />} />
                   <Route path="/profile" element={<div className="p-6">Profile coming soon...</div>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
