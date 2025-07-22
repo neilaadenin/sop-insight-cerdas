@@ -56,34 +56,51 @@ const UploadSOP: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.judul || !formData.departemen || !formData.kategori || !formData.file) {
-      toast({
-        title: "Error",
-        description: "Harap lengkapi semua field yang wajib diisi.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsUploading(true);
 
-    // Simulate upload and AI analysis
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Mock new SOP data
-    const newSOP = {
+    // Create mock SOP data (auto-upload for demo)
+    const mockSOP = {
       id: `sop-${Date.now()}`,
-      judul: formData.judul,
-      kategori: formData.kategori,
-      departemen: formData.departemen,
-      tag: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      judul: formData.judul || "SOP Onboarding Karyawan Baru",
+      kategori: formData.kategori || "SDM & Organisasi",
+      departemen: formData.departemen || "HR",
+      tag: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : ["#Onboarding", "#HR"],
       versi: 'v1.0',
       diunggah_oleh: 'Indira Kamila',
       tanggal: new Date().toLocaleDateString('id-ID'),
-      ringkasan: `Ringkasan AI: ${formData.judul} menjelaskan prosedur ${formData.kategori.toLowerCase()} untuk departemen ${formData.departemen}. ${formData.deskripsi || 'Dokumen ini berisi panduan lengkap sesuai standar operasional PAC.'}`,
-      file: formData.file.name
+      ringkasan: `SOP ini bertujuan untuk memastikan proses penyambutan dan adaptasi karyawan baru berjalan lancar, konsisten, dan efisien.
+
+**Tujuan:** Memastikan proses onboarding yang terstruktur dan konsisten di seluruh unit kerja PAC.
+
+**Ruang Lingkup:** Berlaku untuk seluruh unit kerja PAC.
+
+**Langkah-langkah:**
+1. HR menyiapkan dokumen kontrak dan akses kerja (email, ID card)
+2. Atasan langsung menjadwalkan sesi orientasi internal
+3. Tim IT mengaktifkan sistem akses dan tools kerja
+4. Karyawan mengikuti pelatihan awal selama 5 hari
+5. Assignment mentor untuk pendampingan 30 hari pertama
+6. Evaluasi dan dokumentasi progress karyawan baru
+
+**PIC:** HR Generalist, IT Support, dan Line Manager.
+
+**Batas Waktu:** Semua proses onboarding harus selesai maksimal 7 hari kerja sejak tanggal bergabung.
+
+**Catatan Tambahan:** Ringkasan ini tidak menggantikan dokumen asli. Lihat SOP lengkap untuk detail template email, form evaluasi, dan timeline mentoring.`,
+      file: formData.file?.name || "sop_onboarding_karyawan_baru.pdf",
+      riwayat_versi: [
+        {
+          versi: 'v1.0',
+          tanggal: new Date().toLocaleDateString('id-ID'),
+          diunggah_oleh: 'Indira Kamila',
+          catatan: "Dokumen awal SOP Onboarding untuk seluruh unit HR"
+        }
+      ]
     };
 
+    // Simulate AI analysis
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
     setIsUploading(false);
     
     toast({
@@ -91,8 +108,8 @@ const UploadSOP: React.FC = () => {
       description: "SOP berhasil diunggah dan dianalisis oleh AI.",
     });
 
-    // Navigate to detail page
-    navigate(`/sop/${newSOP.id}`);
+    // Navigate to detail page with mock ID
+    navigate(`/sop/sop-${Date.now()}`);
   };
 
   if (isUploading) {
@@ -103,9 +120,9 @@ const UploadSOP: React.FC = () => {
             <div className="space-y-4">
               <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
               <div>
-                <h3 className="font-semibold text-lg">Menganalisis Dokumen</h3>
+                <h3 className="font-semibold text-lg">Menganalisis SOP...</h3>
                 <p className="text-sm text-muted-foreground">
-                  AI sedang membuat ringkasan otomatis...
+                  Menyiapkan ringkasan AI...
                 </p>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
@@ -217,7 +234,7 @@ const UploadSOP: React.FC = () => {
 
             {/* File Upload */}
             <div className="space-y-2">
-              <Label htmlFor="file">File PDF *</Label>
+              <Label htmlFor="file">File PDF (opsional untuk demo)</Label>
               <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
                 <input
                   id="file"
@@ -236,8 +253,8 @@ const UploadSOP: React.FC = () => {
                     <div className="space-y-2">
                       <FileText className="w-12 h-12 mx-auto text-muted-foreground" />
                       <div>
-                        <p className="font-medium">Klik untuk pilih file PDF</p>
-                        <p className="text-sm text-muted-foreground">Maksimal 10MB</p>
+                        <p className="font-medium">Klik untuk pilih file PDF atau kosongkan untuk demo</p>
+                        <p className="text-sm text-muted-foreground">Maksimal 10MB - File opsional untuk demo</p>
                       </div>
                     </div>
                   )}

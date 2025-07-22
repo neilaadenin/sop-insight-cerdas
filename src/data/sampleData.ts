@@ -11,7 +11,7 @@ export const kategoris: Kategori[] = [
 
 export const sops: SOP[] = [
   {
-    id: 'sop-1',
+    id: '1',
     judul: 'SOP Rekrutmen HR v3',
     kategori: 'SDM & Organisasi',
     departemen: 'HR',
@@ -19,7 +19,26 @@ export const sops: SOP[] = [
     versi: 'v3.0',
     diunggah_oleh: 'Indira Kamila',
     tanggal: '2025-07-10',
-    ringkasan: 'Proses seleksi dan onboarding karyawan baru untuk seluruh unit HR. Mencakup tahapan dari posting lowongan hingga orientasi karyawan dengan background check.',
+    ringkasan: `SOP ini mengatur seluruh proses rekrutmen dari tahap perencanaan hingga onboarding karyawan baru di lingkungan PAC.
+
+**Tujuan:** Memastikan proses rekrutmen yang terstruktur, transparan, dan efisien untuk mendapatkan kandidat terbaik.
+
+**Ruang Lingkup:** Berlaku untuk seluruh divisi yang membutuhkan penambahan karyawan.
+
+**Langkah-langkah:**
+1. Analisis kebutuhan SDM oleh line manager
+2. Pembuatan job description dan posting lowongan
+3. Screening CV dan tes administrasi
+4. Interview tahap 1 (HR) dan tahap 2 (User)
+5. Background check dan verifikasi dokumen
+6. Negosiasi salary dan penerbitan offering letter
+7. Proses onboarding dan orientasi
+
+**PIC:** HR Recruiter, Line Manager, dan HR Generalist.
+
+**Batas Waktu:** Maksimal 30 hari kerja dari posting hingga kandidat bergabung.
+
+**Catatan Tambahan:** Proses dapat dipercepat untuk posisi urgent dengan approval khusus dari Head of HR.`,
     file: 'sop_rekrutmen_hr_v3.pdf',
     riwayat_versi: [
       { versi: 'v1.0', diunggah_oleh: 'Indira Kamila', tanggal: '2025-06-01', perubahan: 'Upload awal', file: 'sop_rekrutmen_hr_v1.pdf' },
@@ -28,7 +47,7 @@ export const sops: SOP[] = [
     ]
   },
   {
-    id: 'sop-2',
+    id: '2',
     judul: 'SOP Penggajian Bulanan v2.2',
     kategori: 'Keuangan & Audit',
     departemen: 'Keuangan',
@@ -36,7 +55,26 @@ export const sops: SOP[] = [
     versi: 'v2.2',
     diunggah_oleh: 'David Effendi',
     tanggal: '2025-07-05',
-    ringkasan: 'Menjelaskan waktu pembayaran, struktur gaji, dan laporan pajak bulanan. Termasuk proses perhitungan lembur dan tunjangan.',
+    ringkasan: `SOP ini mengatur seluruh proses penggajian bulanan untuk memastikan akurasi pembayaran dan kepatuhan terhadap regulasi perpajakan.
+
+**Tujuan:** Memastikan proses payroll yang akurat, tepat waktu, dan sesuai dengan ketentuan perpajakan yang berlaku.
+
+**Ruang Lingkup:** Berlaku untuk seluruh karyawan tetap, kontrak, dan freelancer PAC.
+
+**Langkah-langkah:**
+1. Pengumpulan data kehadiran dari sistem absensi
+2. Kalkulasi gaji pokok, tunjangan, dan overtime
+3. Perhitungan potongan (BPJS, pajak, cicilan)
+4. Review dan approval oleh Finance Manager
+5. Transfer gaji melalui sistem perbankan
+6. Distribusi slip gaji digital
+7. Pelaporan pajak PPh 21 ke DJP
+
+**PIC:** Payroll Specialist, Finance Manager, dan Tax Officer.
+
+**Batas Waktu:** Gaji harus ditransfer maksimal tanggal 25 setiap bulan.
+
+**Catatan Tambahan:** Untuk karyawan baru atau resign, perhitungan dilakukan pro-rata sesuai hari kerja efektif.`,
     file: 'sop_penggajian_bulanan_v2_2.pdf',
     riwayat_versi: [
       { versi: 'v1.0', diunggah_oleh: 'David Effendi', tanggal: '2025-05-01', perubahan: 'Upload awal', file: 'sop_penggajian_v1.pdf' },
