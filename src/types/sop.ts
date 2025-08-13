@@ -16,6 +16,7 @@ export interface SOP {
   tanggal: string;
   ringkasan: string;
   file: string;
+  status: 'Pending' | 'Verified' | 'Rejected';
   riwayat_versi?: SOPVersion[];
 }
 

@@ -1,26 +1,87 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+"use client"
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, User, FileText, History } from 'lucide-react';
-import { sops } from '@/data/sampleData';
 import FloatingChatbot from '@/components/FloatingChatbot';
 import SOPViewer from '@/components/SOPViewer';
 import VersionHistory from '@/components/VersionHistory';
 
-const SOPDetail: React.FC = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
+interface APISOP {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  status_reason?: string;
+  category: {
+    id: number;
+    category_name: string;
+    description: string;
+  };
+  division: {
+    id: number;
+    division_name: string;
+    description: string;
+  };
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const SOPDetail: React.FC<{ sopId: string }> = ({ sopId }) => {
+  const router = useRouter();
   const [showHistory, setShowHistory] = useState(false);
+  const [sop, setSop] = useState<APISOP | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const sop = sops.find(s => s.id === id);
+  // Fetch SOP data from API
+  useEffect(() => {
+    const fetchSOP = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+                       const response = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/sops');
+        if (!response.ok) throw new Error('Gagal mengambil data SOP');
+        const data = await response.json();
+        const foundSOP = data.find((s: APISOP) => s.id.toString() === sopId);
+        if (foundSOP) {
+          setSop(foundSOP);
+        } else {
+          setError('SOP tidak ditemukan');
+        }
+      } catch (error) {
+        console.error('Error fetching SOP:', error);
+        setError('Tidak dapat terhubung ke server');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSOP();
+  }, [sopId]);
   
-  if (!sop) {
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading SOP data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !sop) {
     return (
       <div className="p-6 text-center">
-        <p className="text-muted-foreground">SOP tidak ditemukan</p>
-        <Button onClick={() => navigate('/')} className="mt-4">
+        <p className="text-muted-foreground">{error || 'SOP tidak ditemukan'}</p>
+        <Button onClick={() => router.push('/')} className="mt-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Kembali ke Daftar SOP
         </Button>
@@ -33,7 +94,7 @@ const SOPDetail: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
+          <Button variant="ghost" onClick={() => router.push('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali ke Daftar SOP
           </Button>
@@ -49,14 +110,14 @@ const SOPDetail: React.FC = () => {
         
         <div className="space-y-3">
           <div className="flex items-start justify-between">
-            <h1 className="text-2xl font-bold text-foreground">{sop.judul}</h1>
-            <Badge variant="outline">{sop.versi}</Badge>
+            <h1 className="text-2xl font-bold text-foreground">{sop.title}</h1>
+            <Badge variant="outline">{sop.status}</Badge>
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{sop.kategori}</Badge>
-            <Badge variant="outline">{sop.departemen}</Badge>
-            {sop.tag.map((tag, index) => (
+            <Badge variant="secondary">{sop.category.category_name}</Badge>
+            <Badge variant="outline">{sop.division.division_name}</Badge>
+            {sop.tags && sop.tags.map((tag, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {tag}
               </Badge>
@@ -66,11 +127,11 @@ const SOPDetail: React.FC = () => {
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4" />
-              <span>{sop.tanggal}</span>
+              <span>{new Date(sop.created_at).toLocaleDateString('id-ID')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <User className="w-4 h-4" />
-              <span>{sop.diunggah_oleh}</span>
+              <span>System</span>
             </div>
           </div>
         </div>
@@ -89,49 +150,41 @@ const SOPDetail: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="w-5 h-5" />
-                <span>Ringkasan AI</span>
+                <span>Deskripsi SOP</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {sop.ringkasan}
+                {sop.description}
               </p>
             </CardContent>
           </Card>
-          
-          {/* Quick Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasi Dokumen</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm font-medium">Departemen</p>
-                <p className="text-sm text-muted-foreground">{sop.departemen}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Kategori</p>
-                <p className="text-sm text-muted-foreground">{sop.kategori}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Versi Saat Ini</p>
-                <p className="text-sm text-muted-foreground">{sop.versi}</p>
-              </div>
-            </CardContent>
-          </Card>
+
+          {sop.status_reason && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-red-600">Alasan Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-600">
+                  {sop.status_reason}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
-      {/* Floating Chatbot */}
-      <FloatingChatbot sop={sop} />
-      
       {/* Version History Modal */}
       {showHistory && (
         <VersionHistory 
-          sop={sop} 
-          onClose={() => setShowHistory(false)} 
+          isOpen={showHistory} 
+          onClose={() => setShowHistory(false)}
+          sopId={sopId}
         />
       )}
+
+      <FloatingChatbot />
     </div>
   );
 };

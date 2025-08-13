@@ -1,10 +1,30 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Lock } from 'lucide-react';
-import { SOP } from '@/types/sop';
+
+interface APISOP {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  status_reason?: string;
+  category: {
+    id: number;
+    category_name: string;
+    description: string;
+  };
+  division: {
+    id: number;
+    division_name: string;
+    description: string;
+  };
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
 
 interface SOPViewerProps {
-  sop: SOP;
+  sop: APISOP;
 }
 
 const SOPViewer: React.FC<SOPViewerProps> = ({ sop }) => {
@@ -24,7 +44,7 @@ const SOPViewer: React.FC<SOPViewerProps> = ({ sop }) => {
             <div>
               <p className="font-medium">PDF Viewer Demo</p>
               <p className="text-sm text-muted-foreground">
-                Menampilkan: {sop.file}
+                Menampilkan: {sop.title}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 🔒 Mode aman: Tanpa download, cetak, atau screenshot

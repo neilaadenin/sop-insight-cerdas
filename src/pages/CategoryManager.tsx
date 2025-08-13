@@ -1,234 +1,262 @@
-import React, { useState } from 'react';
+"use client"
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, FolderOpen } from 'lucide-react';
-import { kategoris } from '@/data/sampleData';
+import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface APICategory {
+  id: number;
+  category_name: string;
+  description: string;
+}
+
 const CategoryManager: React.FC = () => {
-  const { toast } = useToast();
-  const [categories, setCategories] = useState(kategoris);
+  const [categories, setCategories] = useState<APICategory[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<APICategory | null>(null);
   const [formData, setFormData] = useState({
-    nama: '',
-    icon: '',
-    warna: '#3b82f6'
+    category_name: '',
+    description: ''
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const colors = [
-    { name: 'Biru', value: '#3b82f6' },
-    { name: 'Hijau', value: '#10b981' },
-    { name: 'Ungu', value: '#8b5cf6' },
-    { name: 'Merah', value: '#ef4444' },
-    { name: 'Kuning', value: '#f59e0b' },
-    { name: 'Pink', value: '#ec4899' }
-  ];
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/categories');
+        if (!response.ok) throw new Error('Gagal mengambil data kategori');
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setError('Gagal mengambil data kategori dari server');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const icons = ['📁', '👥', '💰', '🖥️', '🏭', '📋', '🔧', '📊', '🎯', '⚡'];
+    fetchCategories();
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.nama || !formData.icon) {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreate = () => {
+    if (!formData.category_name.trim()) {
       toast({
         title: "Error",
-        description: "Nama dan ikon wajib diisi.",
+        description: "Nama kategori harus diisi",
         variant: "destructive"
       });
       return;
     }
 
-    if (editingCategory) {
-      // Update existing category
-      setCategories(prev => prev.map(cat => 
-        cat.id === editingCategory.id 
-          ? { ...cat, ...formData }
-          : cat
-      ));
-      toast({
-        title: "Berhasil!",
-        description: "Kategori berhasil diperbarui.",
-      });
-      setEditingCategory(null);
-    } else {
-      // Create new category
-      const newCategory = {
-        id: `cat-${Date.now()}`,
-        ...formData
-      };
-      setCategories(prev => [...prev, newCategory]);
-      toast({
-        title: "Berhasil!",
-        description: "Kategori baru berhasil dibuat.",
-      });
-      setIsCreateOpen(false);
-    }
+    const newCategory: APICategory = {
+      id: Date.now(), // Temporary ID for demo
+      category_name: formData.category_name.trim(),
+      description: formData.description.trim()
+    };
 
-    setFormData({ nama: '', icon: '', warna: '#3b82f6' });
+    setCategories(prev => [...prev, newCategory]);
+    setFormData({ category_name: '', description: '' });
+    setIsCreateOpen(false);
+    
+    toast({
+      title: "Sukses",
+      description: "Kategori berhasil ditambahkan"
+    });
   };
 
-  const handleEdit = (category: any) => {
+  const handleEdit = (category: APICategory) => {
     setEditingCategory(category);
     setFormData({
-      nama: category.nama,
-      icon: category.icon,
-      warna: category.warna
+      category_name: category.category_name,
+      description: category.description
     });
   };
 
-  const handleDelete = (categoryId: string) => {
-    setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+  const handleUpdate = () => {
+    if (!editingCategory || !formData.category_name.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama kategori harus diisi",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setCategories(prev => prev.map(cat => 
+      cat.id === editingCategory.id 
+        ? { ...cat, category_name: formData.category_name.trim(), description: formData.description.trim() }
+        : cat
+    ));
+
+    setEditingCategory(null);
+    setFormData({ category_name: '', description: '' });
+    
     toast({
-      title: "Berhasil!",
-      description: "Kategori berhasil dihapus.",
+      title: "Sukses",
+      description: "Kategori berhasil diupdate"
     });
   };
 
-  const CategoryForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="nama">Nama Kategori</Label>
-        <Input
-          id="nama"
-          placeholder="Contoh: SDM & Organisasi"
-          value={formData.nama}
-          onChange={(e) => setFormData(prev => ({ ...prev, nama: e.target.value }))}
-          required
-        />
-      </div>
+  const handleDelete = (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+      setCategories(prev => prev.filter(cat => cat.id !== id));
+      toast({
+        title: "Sukses",
+        description: "Kategori berhasil dihapus"
+      });
+    }
+  };
 
-      <div className="space-y-2">
-        <Label>Pilih Ikon</Label>
-        <div className="grid grid-cols-5 gap-2">
-          {icons.map(icon => (
-            <Button
-              key={icon}
-              type="button"
-              variant={formData.icon === icon ? "default" : "outline"}
-              className="h-12 w-12 text-lg p-0"
-              onClick={() => setFormData(prev => ({ ...prev, icon }))}
-            >
-              {icon}
-            </Button>
-          ))}
+  const handleCancel = () => {
+    setIsCreateOpen(false);
+    setEditingCategory(null);
+    setFormData({ category_name: '', description: '' });
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading kategori dari API...</p>
+          </div>
         </div>
       </div>
-
-      <div className="space-y-2">
-        <Label>Pilih Warna</Label>
-        <div className="grid grid-cols-3 gap-2">
-          {colors.map(color => (
-            <Button
-              key={color.value}
-              type="button"
-              variant={formData.warna === color.value ? "default" : "outline"}
-              className="justify-start"
-              onClick={() => setFormData(prev => ({ ...prev, warna: color.value }))}
-            >
-              <div 
-                className="w-4 h-4 rounded-full mr-2" 
-                style={{ backgroundColor: color.value }}
-              />
-              {color.name}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full">
-        {editingCategory ? 'Perbarui Kategori' : 'Buat Kategori'}
-      </Button>
-    </form>
-  );
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Kelola Kategori</h1>
-          <p className="text-muted-foreground mt-2">
-            Atur kategori untuk mengorganisir SOP dengan lebih baik
-          </p>
-        </div>
-        
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Tambah Kategori
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Buat Kategori Baru</DialogTitle>
-            </DialogHeader>
-            <CategoryForm />
-          </DialogContent>
-        </Dialog>
+        <h1 className="text-3xl font-bold text-foreground">Manajemen Kategori</h1>
+        <Button onClick={() => setIsCreateOpen(true)} className="flex items-center space-x-2">
+          <Plus className="w-4 h-4" />
+          <span>Tambah Kategori</span>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map(category => (
-          <Card key={category.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{category.icon}</span>
-                  <div>
-                    <CardTitle className="text-lg">{category.nama}</CardTitle>
-                    <Badge 
-                      variant="outline" 
-                      className="mt-1"
-                      style={{ borderColor: category.warna, color: category.warna }}
-                    >
-                      {category.warna}
-                    </Badge>
-                  </div>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <p className="text-red-800">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Form */}
+      {(isCreateOpen || editingCategory) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              {editingCategory ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              <span>{editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="category_name">Nama Kategori *</Label>
+              <Input
+                id="category_name"
+                name="category_name"
+                value={formData.category_name}
+                onChange={handleInputChange}
+                placeholder="Masukkan nama kategori"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Deskripsi</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Masukkan deskripsi kategori (opsional)"
+                rows={3}
+              />
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                onClick={editingCategory ? handleUpdate : handleCreate}
+                className="flex items-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>{editingCategory ? 'Update' : 'Simpan'}</span>
+              </Button>
+              <Button variant="outline" onClick={handleCancel}>
+                <X className="w-4 h-4 mr-2" />
+                Batal
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Categories List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categories.map((category) => (
+          <Card key={category.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="text-lg">{category.category_name}</span>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(category)}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(category.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-              </div>
+              </CardTitle>
             </CardHeader>
-            
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleEdit(category)}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleDelete(category.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Hapus
-                </Button>
+            <CardContent>
+              {category.description && (
+                <p className="text-sm text-muted-foreground mb-3">
+                  {category.description}
+                </p>
+              )}
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary">ID: {category.id}</Badge>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Edit Category Dialog */}
-      {editingCategory && (
-        <Dialog open={!!editingCategory} onOpenChange={() => setEditingCategory(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Kategori</DialogTitle>
-            </DialogHeader>
-            <CategoryForm />
-          </DialogContent>
-        </Dialog>
+      {categories.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground">
+            <p className="text-lg">Belum ada kategori</p>
+            <p className="text-sm">Mulai dengan menambahkan kategori pertama</p>
+          </div>
+        </div>
       )}
     </div>
   );

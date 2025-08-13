@@ -1,45 +1,42 @@
+"use client"
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { RefreshCw } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Search, Bell, HelpCircle, User } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const { currentUser, switchRole, isAdmin } = useAuth();
-
-  const handleRoleSwitch = () => {
-    switchRole(isAdmin ? 'Karyawan' : 'Admin');
-  };
-
   return (
-    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">PAC</span>
-          </div>
-          <h1 className="text-xl font-semibold text-foreground">Dashboard SOP</h1>
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm z-50">
+      {/* Logo dan Nama Perusahaan */}
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-lg">PAC</span>
+        </div>
+        <h1 className="text-xl font-semibold text-gray-900">PT Sarana Pactindo</h1>
+      </div>
+
+      {/* Search Bar di Tengah */}
+      <div className="flex-1 max-w-2xl mx-8">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            placeholder="Cari SOP berdasarkan judul, deskripsi, atau tag..."
+            className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
+          />
         </div>
       </div>
 
+      {/* Icons di Kanan */}
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Masuk sebagai:</span>
-          <Badge variant={isAdmin ? "default" : "secondary"}>
-            {currentUser?.peran} - {currentUser?.nama}
-          </Badge>
-        </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRoleSwitch}
-          className="flex items-center space-x-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Ganti Peran</span>
-        </Button>
+        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <Bell className="w-5 h-5" />
+        </button>
+        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <HelpCircle className="w-5 h-5" />
+        </button>
+        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <User className="w-5 h-5" />
+        </button>
       </div>
     </header>
   );
