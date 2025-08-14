@@ -62,15 +62,17 @@ const UploadSOP: React.FC = () => {
       try {
         setLoading(true);
         
-        // Fetch categories
-        const categoriesResponse = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/categories');
-        if (!categoriesResponse.ok) throw new Error('Gagal mengambil data kategori');
-        const categoriesData = await categoriesResponse.json();
-        // Ensure categoriesData is an array
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+                 // Fetch categories
+         const categoriesResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories');
+         if (!categoriesResponse.ok) throw new Error('Gagal mengambil data kategori');
+         const categoriesData = await categoriesResponse.json();
+         console.log('Categories API response:', categoriesData);
+         // Extract categories from data property
+         const categoriesArray = categoriesData.data || [];
+         setCategories(Array.isArray(categoriesArray) ? categoriesArray : []);
         
         // Fetch pending SOPs
-        const sopsResponse = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/sops');
+        const sopsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops');
         if (!sopsResponse.ok) throw new Error('Gagal mengambil data SOP');
         const sopsData = await sopsResponse.json();
         // Ensure sopsData is an array before filtering
@@ -153,7 +155,7 @@ const UploadSOP: React.FC = () => {
       formDataToSend.append('tags', tags.join(','));
       formDataToSend.append('file', selectedFile);
 
-      const response = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/sops', {
+      const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops', {
         method: 'POST',
         body: formDataToSend
       });
@@ -175,6 +177,7 @@ const UploadSOP: React.FC = () => {
         });
         setSelectedFile(null);
         setTags([]);
+        setInputTag('');
         
         // Redirect to dashboard
         router.push('/');
@@ -282,14 +285,23 @@ const UploadSOP: React.FC = () => {
                       <SelectValue placeholder="Pilih kategori" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.isArray(categories) && categories.map(category => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.category_name}
-                        </SelectItem>
-                      ))}
+                      {categories && categories.length > 0 ? (
+                        categories.map(category => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {category.category_name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="1">HR</SelectItem>
+                          <SelectItem value="2">IT</SelectItem>
+                          <SelectItem value="3">Keuangan</SelectItem>
+                          <SelectItem value="4">Produksi</SelectItem>
+                          <SelectItem value="5">Umum</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Categories loaded: {categories.length} items</p>
                 </div>
               </div>
 
@@ -326,7 +338,7 @@ const UploadSOP: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <Input
-                      placeholder="Ketik tag dan tekan Enter"
+                      placeholder="Ketik tag dan tekan Enter atau klik +"
                       value={inputTag}
                       onChange={(e) => setInputTag(e.target.value)}
                       onKeyDown={handleTagInputKeyDown}
@@ -341,24 +353,25 @@ const UploadSOP: React.FC = () => {
                           setInputTag('');
                         }
                       }}
+                      className="px-3"
                     >
-                      <Tag className="w-4 h-4" />
+                      +
                     </Button>
                   </div>
                   
                   {tags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center space-x-1">
+                        <div key={index} className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
                           <span>{tag}</span>
                           <button
                             type="button"
                             onClick={() => removeTag(tag)}
-                            className="ml-1 hover:text-destructive"
+                            className="ml-1 hover:text-red-600 text-blue-600"
                           >
-                            <X className="w-3 h-3" />
+                            ×
                           </button>
-                        </Badge>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -451,6 +464,16 @@ const UploadSOP: React.FC = () => {
                       )}
                       {getStatusBadge(sop.status)}
                     </div>
+                    
+                    {sop.tags && sop.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {sop.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-gray-50 text-gray-700">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">

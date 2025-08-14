@@ -44,7 +44,7 @@ const SOPDetail: React.FC<{ sopId: string }> = ({ sopId }) => {
       try {
         setLoading(true);
         setError(null);
-                       const response = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/sops');
+                       const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops');
         if (!response.ok) throw new Error('Gagal mengambil data SOP');
         const data = await response.json();
         const foundSOP = data.find((s: APISOP) => s.id.toString() === sopId);

@@ -45,15 +45,15 @@ export default function TestAPIPage() {
   const runTests = async () => {
     setLoading(true);
     
-    const sopsResult = await testEndpoint(
-      'https://ocean-lake-claims-transcription.trycloudflare.com/sops',
-      'SOPs'
-    );
+         const sopsResult = await testEndpoint(
+       'https://jeans-wa-dos-impact.trycloudflare.com/sops',
+       'SOPs'
+     );
     
-    const categoriesResult = await testEndpoint(
-      'https://ocean-lake-claims-transcription.trycloudflare.com/categories',
-      'Categories'
-    );
+         const categoriesResult = await testEndpoint(
+       'https://jeans-wa-dos-impact.trycloudflare.com/categories',
+       'Categories'
+     );
 
     setResults({
       sops: sopsResult,
@@ -113,9 +113,9 @@ export default function TestAPIPage() {
             <div className="space-y-3">
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
-                <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                  https://innovative-merit-bailey-ambient.trycloudflare.com/sops
-                </code>
+                                 <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
+                   https://jeans-wa-dos-impact.trycloudflare.com/sops
+                 </code>
               </div>
               
               {results.sops.success ? (
@@ -164,9 +164,9 @@ export default function TestAPIPage() {
             <div className="space-y-3">
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
-                <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                  https://innovative-merit-bailey-ambient.trycloudflare.com/categories
-                </code>
+                                 <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
+                   https://jeans-wa-dos-impact.trycloudflare.com/categories
+                 </code>
               </div>
               
               {results.categories.success ? (

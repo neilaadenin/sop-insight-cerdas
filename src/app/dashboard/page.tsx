@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronRight, Search, Filter, FileText, Eye, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
+import { api } from '@/lib/api';
 
 interface APISOP {
   id: number;
@@ -58,7 +59,7 @@ export default function DashboardPage() {
         // Fetch SOPs with better error handling
         let sopsResponse;
         try {
-          sopsResponse = await fetch('https://ocean-lake-claims-transcription.trycloudflare.com/sops', {
+          sopsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export default function DashboardPage() {
         // Fetch Categories with better error handling
         let categoriesResponse;
         try {
-          categoriesResponse = await fetch('https://ocean-lake-claims-transcription.trycloudflare.com/categories', {
+          categoriesResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -108,7 +109,7 @@ export default function DashboardPage() {
         
         // Try to fetch Divisions (with fallback)
         try {
-          const divisionsResponse = await fetch('https://innovative-merit-bailey-ambient.trycloudflare.com/divisions');
+          const divisionsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/divisions');
           if (divisionsResponse.ok) {
             const divisionsData = await divisionsResponse.json();
             const divs = divisionsData.data || divisionsData;

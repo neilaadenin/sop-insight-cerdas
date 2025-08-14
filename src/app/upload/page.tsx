@@ -53,13 +53,13 @@ export default function UploadPage() {
         setLoading(true);
         
                  // Fetch categories
-         const categoriesResponse = await fetch('https://ocean-lake-claims-transcription.trycloudflare.com/categories');
+         const categoriesResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories');
         if (!categoriesResponse.ok) throw new Error('Gagal mengambil data kategori');
         const categoriesData = await categoriesResponse.json();
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
         
                  // Fetch pending SOPs
-         const sopsResponse = await fetch('https://ocean-lake-claims-transcription.trycloudflare.com/sops');
+         const sopsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops');
         if (sopsResponse.ok) {
           const sopsData = await sopsResponse.json();
           const sops = sopsData.data || sopsData;
@@ -117,7 +117,7 @@ export default function UploadPage() {
       formDataToSend.append('category_id', formData.kategori);
       formDataToSend.append('file', selectedFile);
 
-             const response = await fetch('https://ocean-lake-claims-transcription.trycloudflare.com/sops', {
+             const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops', {
         method: 'POST',
         body: formDataToSend
       });
