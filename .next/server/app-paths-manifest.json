@@ -1,8 +1,8 @@
 {
-  "/upload/page": "app/upload/page.js",
-  "/not-found": "app/not-found.js",
-  "/test-api/page": "app/test-api/page.js",
   "/page": "app/page.js",
+  "/sop/[id]/page": "app/sop/[id]/page.js",
+  "/profile/page": "app/profile/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/upload/page": "app/upload/page.js",
   "/categories/page": "app/categories/page.js"
 }
