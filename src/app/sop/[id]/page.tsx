@@ -37,7 +37,7 @@ export default function SOPPage({ params }: SOPPageProps) {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`https://jeans-wa-dos-impact.trycloudflare.com/sops/${params.id}`);
+        const response = await fetch(`https://und-mention-inspiration-fast.trycloudflare.com/sops/${params.id}`);
         if (!response.ok) throw new Error('Gagal mengambil data SOP');
         const data = await response.json();
         setSop(data);

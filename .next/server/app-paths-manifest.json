@@ -1,8 +1,4 @@
 {
-  "/page": "app/page.js",
-  "/sop/[id]/page": "app/sop/[id]/page.js",
-  "/profile/page": "app/profile/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/upload/page": "app/upload/page.js",
-  "/categories/page": "app/categories/page.js"
+  "/upload/page": "app/upload/page.js"
 }

@@ -1,12 +1,12 @@
 // API Configuration
 export const API_CONFIG = {
   // Primary API URL - can be overridden by environment variable
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://innovative-merit-bailey-ambient.trycloudflare.com',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://und-mention-inspiration-fast.trycloudflare.com',
   
   // Fallback URLs if primary fails
   FALLBACK_URLS: [
-    'https://ocean-lake-claims-transcription.trycloudflare.com',
-    'https://innovative-merit-bailey-ambient.trycloudflare.com'
+    'https://und-mention-inspiration-fast.trycloudflare.com',
+    'https://und-mention-inspiration-fast.trycloudflare.com'
   ],
   
   // API Endpoints

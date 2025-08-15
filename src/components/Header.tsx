@@ -9,9 +9,11 @@ const Header: React.FC = () => {
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm z-50">
       {/* Logo dan Nama Perusahaan */}
       <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-lg">PAC</span>
-        </div>
+        <img 
+          src="/pac-logo.png" 
+          alt="PAC Logo" 
+          className="w-16 h-10 object-cover"
+        />
         <h1 className="text-xl font-semibold text-gray-900">PT Sarana Pactindo</h1>
       </div>
 

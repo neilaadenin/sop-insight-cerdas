@@ -59,7 +59,7 @@ export default function DashboardPage() {
         // Fetch SOPs with better error handling
         let sopsResponse;
         try {
-          sopsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops', {
+          sopsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export default function DashboardPage() {
         // Fetch Categories with better error handling
         let categoriesResponse;
         try {
-          categoriesResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories', {
+          categoriesResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ export default function DashboardPage() {
         
         // Try to fetch Divisions (with fallback)
         try {
-          const divisionsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/divisions');
+          const divisionsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/divisions');
           if (divisionsResponse.ok) {
             const divisionsData = await divisionsResponse.json();
             const divs = divisionsData.data || divisionsData;

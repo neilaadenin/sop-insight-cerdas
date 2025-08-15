@@ -38,10 +38,11 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState({
-    judul: '',
-    departemen: '',
-    kategori: '',
-    ringkasan: ''
+    title: '',
+    description: '',
+    category_name: '',
+    division_name: '',
+    tags: ''
   });
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -52,14 +53,20 @@ export default function UploadPage() {
       try {
         setLoading(true);
         
-                 // Fetch categories
-         const categoriesResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories');
+        // Fetch categories
+        const categoriesResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories');
         if (!categoriesResponse.ok) throw new Error('Gagal mengambil data kategori');
         const categoriesData = await categoriesResponse.json();
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        console.log('Categories API response:', categoriesData);
+        // Extract categories from data property
+        const categoriesArray = categoriesData.data || categoriesData;
+        console.log('Extracted categories array:', categoriesArray);
+        const finalCategories = Array.isArray(categoriesArray) ? categoriesArray : [];
+        console.log('Final categories to set:', finalCategories);
+        setCategories(finalCategories);
         
-                 // Fetch pending SOPs
-         const sopsResponse = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops');
+        // Fetch pending SOPs
+        const sopsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops');
         if (sopsResponse.ok) {
           const sopsData = await sopsResponse.json();
           const sops = sopsData.data || sopsData;
@@ -70,7 +77,14 @@ export default function UploadPage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setCategories([]);
+        // Set fallback categories if API fails
+        setCategories([
+          { id: 1, category_name: 'HR', description: 'Human Resources' },
+          { id: 2, category_name: 'IT', description: 'Information Technology' },
+          { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
+          { id: 4, category_name: 'Produksi', description: 'Production' },
+          { id: 5, category_name: 'Umum', description: 'General' }
+        ]);
         setPendingSOPs([]);
       } finally {
         setLoading(false);
@@ -98,10 +112,10 @@ export default function UploadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.judul || !formData.departemen || !formData.kategori || !selectedFile) {
+    if (!formData.title || !formData.category_name || !formData.division_name || !selectedFile) {
       toast({
         title: "Error",
-        description: "Semua field wajib diisi",
+        description: "Judul, kategori, departemen, dan file wajib diisi",
         variant: "destructive"
       });
       return;
@@ -110,29 +124,60 @@ export default function UploadPage() {
     setIsSubmitting(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('judul', formData.judul);
-      formDataToSend.append('deskripsi', formData.ringkasan);
-      formDataToSend.append('departemen', formData.departemen);
-      formDataToSend.append('category_id', formData.kategori);
-      formDataToSend.append('file', selectedFile);
-
-             const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/sops', {
-        method: 'POST',
-        body: formDataToSend
+      // Log the data being sent for debugging
+      console.log('Form data being sent:', {
+        title: formData.title,
+        description: formData.description,
+        category_name: formData.category_name,
+        division_name: formData.division_name,
+        tags: formData.tags,
+        file: selectedFile.name,
+        fileSize: selectedFile.size
       });
 
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('category_name', formData.category_name);
+      formDataToSend.append('division_name', formData.division_name);
+      formDataToSend.append('tags', formData.tags || '');
+      formDataToSend.append('file', selectedFile);
+
+      // Log FormData contents
+      Array.from(formDataToSend.entries()).forEach(([key, value]) => {
+        console.log(`${key}:`, value);
+      });
+
+      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+        method: 'POST',
+        body: formDataToSend,
+        // Don't set Content-Type header - let browser set it with boundary for FormData
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('Success response:', result);
         toast({
           title: "Sukses",
           description: "SOP berhasil diunggah",
         });
         router.push('/');
       } else {
-        const errorData = await response.json();
+        let errorMessage = "Gagal mengunggah SOP";
+        try {
+          const errorData = await response.json();
+          console.log('Error response:', errorData);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          console.log('Could not parse error response');
+        }
+        
         toast({
           title: "Error",
-          description: errorData.message || "Gagal mengunggah SOP",
+          description: `HTTP ${response.status}: ${errorMessage}`,
           variant: "destructive"
         });
       }
@@ -164,21 +209,68 @@ export default function UploadPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="judul">Judul SOP *</Label>
+                <Label htmlFor="title">Judul SOP *</Label>
                 <Input
-                  id="judul"
-                  name="judul"
-                  value={formData.judul}
+                  id="title"
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Masukkan judul SOP"
+                  placeholder="Contoh: SOP Keamanan Data"
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Deskripsi SOP</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Berikan deskripsi singkat tentang SOP ini"
+                  rows={4}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="departemen">Departemen *</Label>
-                  <Select value={formData.departemen} onValueChange={(value) => setFormData(prev => ({ ...prev, departemen: value }))}>
+                  <Label htmlFor="category_name">Kategori *</Label>
+                  <Select value={formData.category_name} onValueChange={(value) => setFormData(prev => ({ ...prev, category_name: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loading ? "Loading kategori..." : "Pilih kategori"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {loading ? (
+                        <div className="p-2 text-center text-sm text-muted-foreground">
+                          Loading kategori...
+                        </div>
+                      ) : categories.length > 0 ? (
+                        categories.map(category => (
+                          <SelectItem key={category.id} value={category.category_name}>
+                            {category.category_name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="HR">HR</SelectItem>
+                          <SelectItem value="IT">IT</SelectItem>
+                          <SelectItem value="Keuangan">Keuangan</SelectItem>
+                          <SelectItem value="Produksi">Produksi</SelectItem>
+                          <SelectItem value="Umum">Umum</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {categories.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {categories.length} kategori tersedia
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="division_name">Departemen *</Label>
+                  <Select value={formData.division_name} onValueChange={(value) => setFormData(prev => ({ ...prev, division_name: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih departemen" />
                     </SelectTrigger>
@@ -191,34 +283,20 @@ export default function UploadPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="kategori">Kategori *</Label>
-                  <Select value={formData.kategori} onValueChange={(value) => setFormData(prev => ({ ...prev, kategori: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih kategori" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.isArray(categories) && categories.map(category => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.category_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ringkasan">Ringkasan SOP</Label>
-                <Textarea
-                  id="ringkasan"
-                  name="ringkasan"
-                  value={formData.ringkasan}
+                <Label htmlFor="tags">Tags</Label>
+                <Input
+                  id="tags"
+                  name="tags"
+                  value={formData.tags}
                   onChange={handleInputChange}
-                  placeholder="Berikan ringkasan singkat tentang SOP ini"
-                  rows={4}
+                  placeholder='Contoh: ["HR", "Panduan"]'
                 />
+                <p className="text-xs text-muted-foreground">
+                  Format: Array JSON atau string biasa
+                </p>
               </div>
 
               <div className="space-y-2">

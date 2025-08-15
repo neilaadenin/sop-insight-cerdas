@@ -46,12 +46,12 @@ export default function TestAPIPage() {
     setLoading(true);
     
          const sopsResult = await testEndpoint(
-       'https://jeans-wa-dos-impact.trycloudflare.com/sops',
+       'https://und-mention-inspiration-fast.trycloudflare.com/sops',
        'SOPs'
      );
     
          const categoriesResult = await testEndpoint(
-       'https://jeans-wa-dos-impact.trycloudflare.com/categories',
+       'https://und-mention-inspiration-fast.trycloudflare.com/categories',
        'Categories'
      );
 
@@ -114,7 +114,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://jeans-wa-dos-impact.trycloudflare.com/sops
+                   https://und-mention-inspiration-fast.trycloudflare.com/sops
                  </code>
               </div>
               
@@ -165,7 +165,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://jeans-wa-dos-impact.trycloudflare.com/categories
+                   https://und-mention-inspiration-fast.trycloudflare.com/categories
                  </code>
               </div>
               

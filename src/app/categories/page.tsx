@@ -42,7 +42,7 @@ export default function CategoriesPage() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories');
+        const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories');
         if (!response.ok) throw new Error('Gagal mengambil data kategori');
         const data = await response.json();
         console.log('Categories API response:', data);
@@ -126,7 +126,7 @@ export default function CategoriesPage() {
     try {
       console.log('Creating category:', formData);
       
-              const response = await fetch('https://jeans-wa-dos-impact.trycloudflare.com/categories', {
+              const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ export default function CategoriesPage() {
       // Try API update first
       let response;
       try {
-        response = await fetch(`https://jeans-wa-dos-impact.trycloudflare.com/categories/${editingCategory.id}`, {
+        response = await fetch(`https://und-mention-inspiration-fast.trycloudflare.com/categories/${editingCategory.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -256,7 +256,7 @@ export default function CategoriesPage() {
         // Try API delete first
         let response;
         try {
-          response = await fetch(`https://jeans-wa-dos-impact.trycloudflare.com/categories/${id}`, {
+          response = await fetch(`https://und-mention-inspiration-fast.trycloudflare.com/categories/${id}`, {
             method: 'DELETE'
           });
         } catch (apiError) {

@@ -1,4 +1,4 @@
-// File: C:\Users\WINDOWS 11\sop-insight-cerdas-indonesia - Copy (4)\src\app\upload\page.tsx
+// File: C:\Users\WINDOWS 11\sop-insight-cerdas\src\app\upload\page.tsx
 import * as entry from '../../../../src/app/upload/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
