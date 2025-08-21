@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Upload, ChevronLeft, ChevronRight, Clock, CheckCircle, FileText, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 
@@ -26,7 +27,6 @@ interface PendingSOP {
   category_id?: number;
   division_id?: number;
   created_at: string;
-  updated_at: string;
 }
 
 export default function UploadPage() {
@@ -36,6 +36,8 @@ export default function UploadPage() {
   const [categories, setCategories] = useState<APICategory[]>([]);
   const [pendingSOPs, setPendingSOPs] = useState<PendingSOP[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -193,256 +195,303 @@ export default function UploadPage() {
     }
   };
 
+  // Pagination functions
+  const totalPages = Math.ceil(pendingSOPs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSOPs = pendingSOPs.slice(startIndex, endIndex);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Unggah SOP Baru</h1>
-          <p className="text-gray-600">Unggah dokumen SOP dan dapatkan ringkasan AI otomatis</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
+        <div className="p-8 max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-4 shadow-lg">
+              <Upload className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unggah SOP Baru</h1>
+            <p className="text-base text-gray-600 max-w-xl mx-auto">
+              Unggah dokumen SOP dan dapatkan ringkasan AI otomatis
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* Upload Form Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Formulir Upload SOP</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Judul SOP *</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: SOP Keamanan Data"
-                  required
-                />
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Upload Form Card */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center space-x-3 text-2xl">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span>Formulir Upload SOP</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="text-sm font-semibold text-gray-700">Judul SOP *</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: SOP Keamanan Data"
+                    className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Deskripsi SOP</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Berikan deskripsi singkat tentang SOP ini"
-                  rows={4}
-                />
-              </div>
+                <div className="space-y-3">
+                  <Label htmlFor="description" className="text-sm font-semibold text-gray-700">Deskripsi SOP</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Berikan deskripsi singkat tentang SOP ini"
+                    rows={4}
+                    className="border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200 resize-none"
+                  />
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category_name">Kategori *</Label>
-                  <Select value={formData.category_name} onValueChange={(value) => setFormData(prev => ({ ...prev, category_name: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={loading ? "Loading kategori..." : "Pilih kategori"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {loading ? (
-                        <div className="p-2 text-center text-sm text-muted-foreground">
-                          Loading kategori...
-                        </div>
-                      ) : categories.length > 0 ? (
-                        categories.map(category => (
-                          <SelectItem key={category.id} value={category.category_name}>
-                            {category.category_name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <>
-                          <SelectItem value="HR">HR</SelectItem>
-                          <SelectItem value="IT">IT</SelectItem>
-                          <SelectItem value="Keuangan">Keuangan</SelectItem>
-                          <SelectItem value="Produksi">Produksi</SelectItem>
-                          <SelectItem value="Umum">Umum</SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {categories.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {categories.length} kategori tersedia
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label htmlFor="category_name" className="text-sm font-semibold text-gray-700">Kategori *</Label>
+                    <Select value={formData.category_name} onValueChange={(value) => setFormData(prev => ({ ...prev, category_name: value }))}>
+                      <SelectTrigger className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200">
+                        <SelectValue placeholder={loading ? "Loading kategori..." : "Pilih kategori"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {loading ? (
+                          <div className="p-2 text-center text-sm text-muted-foreground">
+                            Loading kategori...
+                          </div>
+                        ) : categories.length > 0 ? (
+                          categories.map(category => (
+                            <SelectItem key={category.id} value={category.category_name}>
+                              {category.category_name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <>
+                            <SelectItem value="HR">HR</SelectItem>
+                            <SelectItem value="IT">IT</SelectItem>
+                            <SelectItem value="Keuangan">Keuangan</SelectItem>
+                            <SelectItem value="Produksi">Produksi</SelectItem>
+                            <SelectItem value="Umum">Umum</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {categories.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {categories.length} kategori tersedia
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="division_name" className="text-sm font-semibold text-gray-700">Departemen *</Label>
+                    <Select value={formData.division_name} onValueChange={(value) => setFormData(prev => ({ ...prev, division_name: value }))}>
+                      <SelectTrigger className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200">
+                        <SelectValue placeholder="Pilih departemen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="HR">HR</SelectItem>
+                        <SelectItem value="IT">IT</SelectItem>
+                        <SelectItem value="Keuangan">Keuangan</SelectItem>
+                        <SelectItem value="Marketing">Marketing</SelectItem>
+                        <SelectItem value="Operasional">Operasional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="tags" className="text-sm font-semibold text-gray-700">Tags</Label>
+                  <Input
+                    id="tags"
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleInputChange}
+                    placeholder='Contoh: ["HR", "Panduan"]'
+                    className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Format: Array JSON atau string biasa
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="file" className="text-sm font-semibold text-gray-700">Upload File *</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-all duration-200 bg-gray-50/50 hover:bg-gray-50">
+                    <input
+                      type="file"
+                      id="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      required
+                    />
+                    <label htmlFor="file" className="cursor-pointer">
+                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4 hover:text-blue-500 transition-colors duration-200" />
+                      <p className="text-base font-medium text-gray-700 mb-2">
+                        {selectedFile ? selectedFile.name : "Klik untuk memilih file"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        PDF, DOC, atau DOCX (Max. 10MB)
+                      </p>
+                    </label>
+                  </div>
+                  {selectedFile && (
+                    <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-700 font-medium">
+                        File terpilih: {selectedFile.name}
+                      </span>
+                    </div>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="division_name">Departemen *</Label>
-                  <Select value={formData.division_name} onValueChange={(value) => setFormData(prev => ({ ...prev, division_name: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih departemen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="HR">HR</SelectItem>
-                      <SelectItem value="IT">IT</SelectItem>
-                      <SelectItem value="Keuangan">Keuangan</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Operasional">Operasional</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                <Button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full h-12 text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  {isSubmitting ? 'Mengunggah...' : 'Unggah SOP'}
+                </Button>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
-                <Input
-                  id="tags"
-                  name="tags"
-                  value={formData.tags}
-                  onChange={handleInputChange}
-                  placeholder='Contoh: ["HR", "Panduan"]'
-                />
-                <p className="text-xs text-muted-foreground">
-                  Format: Array JSON atau string biasa
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="file">Upload File *</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <input
-                    type="file"
-                    id="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    required
-                  />
-                  <label htmlFor="file" className="cursor-pointer">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">
-                      {selectedFile ? selectedFile.name : "Klik untuk memilih file"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PDF, DOC, atau DOCX
-                    </p>
-                  </label>
-                </div>
-                {selectedFile && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    File terpilih: {selectedFile.name}
+            {/* Verification Status Card */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center space-x-3 text-2xl">
+                  <div className="p-2 bg-yellow-100 rounded-xl">
+                    <Clock className="w-6 h-6 text-yellow-600" />
                   </div>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                {isSubmitting ? 'Mengunggah...' : 'Unggah SOP'}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Verification Status Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                Dalam Proses Verifikasi
-                {pendingSOPs.length > 0 && (
-                  <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                    {pendingSOPs.length} SOP
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {pendingSOPs.length > 0 ? (
-                <>
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-gray-900">SOP Menunggu Verifikasi:</h4>
-                    {pendingSOPs.map((sop) => (
-                      <div key={sop.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h5 className="font-medium text-gray-900 text-sm line-clamp-2">
-                              {sop.title || 'Untitled SOP'}
-                            </h5>
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                              {sop.description || 'No description'}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                {sop.status}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {new Date(sop.created_at).toLocaleDateString('id-ID')}
-                              </span>
+                  <span>Dalam Proses Verifikasi</span>
+                  {pendingSOPs.length > 0 && (
+                    <Badge className="ml-2 bg-yellow-100 text-yellow-800 border-yellow-200">
+                      {pendingSOPs.length} SOP
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {pendingSOPs.length > 0 ? (
+                  <>
+                    {/* All SOPs List */}
+                    <div className="space-y-3">
+                      {currentSOPs.map((sop, index) => (
+                        <div key={sop.id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-medium text-yellow-700 bg-yellow-200 px-2 py-1 rounded-full">
+                                  SOP {startIndex + index + 1}
+                                </span>
+                                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                  {sop.status}
+                                </Badge>
+                              </div>
+                              <h5 className="font-semibold text-gray-900 text-base mb-2 line-clamp-2">
+                                {sop.title || 'Untitled SOP'}
+                              </h5>
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                {sop.description || 'No description'}
+                              </p>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-1 text-xs text-gray-500">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{new Date(sop.created_at).toLocaleDateString('id-ID')}</span>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-3 text-xs border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                                >
+                                  Lihat
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="pt-3 border-t">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-blue-800">Status Verifikasi</p>
-                          <p className="text-xs text-blue-700">SOP sedang dalam proses review oleh admin</p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                    {/* Pagination */}
+                    <div className="flex items-center justify-center space-x-2 mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={prevPage}
+                        disabled={currentPage === 1}
+                        className="h-10 px-4 text-base"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <span className="text-base text-gray-700">
+                        Halaman {currentPage} dari {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        onClick={nextPage}
+                        disabled={currentPage === totalPages}
+                        className="h-10 px-4 text-base"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada SOP Pending</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      SOP yang baru diunggah akan muncul di sini dan akan diverifikasi oleh tim admin
-                    </p>
                     
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-yellow-800">Status Verifikasi</p>
-                          <p className="text-xs text-yellow-700">Menunggu SOP untuk diverifikasi</p>
-                        </div>
+                    {/* Pagination Dots */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center space-x-2 mt-4">
+                        {Array.from({ length: totalPages }, (_, index) => (
+                          <button
+                            key={index + 1}
+                            onClick={() => goToPage(index + 1)}
+                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                              index + 1 === currentPage 
+                                ? 'bg-blue-500 w-6' 
+                                : 'bg-gray-300 hover:bg-gray-400'
+                            }`}
+                          />
+                        ))}
                       </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center py-6">
+                      <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Clock className="w-8 h-8 text-yellow-600" />
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900 mb-2">Belum Ada SOP Pending</h3>
+                      <p className="text-gray-600 text-sm">
+                        SOP yang baru diunggah akan muncul di sini
+                      </p>
                     </div>
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Tahapan Verifikasi:</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-medium">1</div>
-                    <span className="text-gray-700">Upload SOP selesai</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xs font-medium">2</div>
-                    <span className="text-gray-700">Review oleh admin</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-xs font-medium">3</div>
-                    <span className="text-gray-400">Verifikasi selesai</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <p className="text-xs text-gray-500 text-center">
-                  Setelah verifikasi selesai, SOP akan tersedia di dashboard utama
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AppLayout>

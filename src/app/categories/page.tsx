@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, FolderOpen, Tag, FileText, Users, Calendar } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface APICategory {
@@ -126,7 +126,7 @@ export default function CategoriesPage() {
     try {
       console.log('Creating category:', formData);
       
-              const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories', {
+      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,14 +217,14 @@ export default function CategoriesPage() {
             : cat
         ));
       } else {
-                 // Fallback to localStorage update
-         console.log('Using localStorage fallback for update');
-         const updatedCategory = {
-           ...editingCategory,
-           category_name: formData.category_name.trim(),
-           description: formData.description.trim(),
-           tags: tags
-         };
+        // Fallback to localStorage update
+        console.log('Using localStorage fallback for update');
+        const updatedCategory = {
+          ...editingCategory,
+          category_name: formData.category_name.trim(),
+          description: formData.description.trim(),
+          tags: tags
+        };
         
         setCategories(prev => prev.map(cat => 
           cat.id === editingCategory.id 
@@ -295,12 +295,11 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading...</p>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-6"></div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">Memuat Kategori</h3>
+            <p className="text-gray-500">Sedang mengambil data kategori...</p>
           </div>
         </div>
       </AppLayout>
@@ -310,15 +309,16 @@ export default function CategoriesPage() {
   if (error) {
     return (
       <AppLayout>
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-destructive mb-2">Error</h3>
-              <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={() => window.location.reload()}>
-                Coba Lagi
-              </Button>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto p-8">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FolderOpen className="w-8 h-8 text-red-600" />
             </div>
+            <h3 className="text-xl font-semibold text-red-800 mb-3">Terjadi Kesalahan</h3>
+            <p className="text-red-600 mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()} className="bg-red-600 hover:bg-red-700">
+              Coba Lagi
+            </Button>
           </div>
         </div>
       </AppLayout>
@@ -327,194 +327,305 @@ export default function CategoriesPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Kelola Kategori</h1>
-            <p className="text-muted-foreground mt-2">
-              Kelola kategori SOP untuk organisasi
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
+        <div className="p-8 max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
+              <FolderOpen className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">Kelola Kategori</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Kelola kategori SOP untuk organisasi dengan mudah dan efisien
             </p>
           </div>
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Kategori
-          </Button>
-        </div>
 
-        {/* Create/Edit Form */}
-        {(isCreateOpen || editingCategory) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                {editingCategory ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                <span>{editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="category_name">Nama Kategori *</label>
-                <Input
-                  id="category_name"
-                  name="category_name"
-                  value={formData.category_name}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan nama kategori"
-                />
-              </div>
-                             <div className="space-y-2">
-                 <label htmlFor="description">Deskripsi</label>
-                 <textarea
-                   id="description"
-                   name="description"
-                   value={formData.description}
-                   onChange={handleInputChange}
-                   placeholder="Masukkan deskripsi kategori (opsional)"
-                   rows={3}
-                   className="w-full p-2 border rounded-md"
-                 />
-               </div>
-               
-               <div className="space-y-2">
-                 <label>Tags</label>
-                 <div className="space-y-2">
-                   <div className="flex space-x-2">
-                     <Input
-                       placeholder="Ketik tag dan tekan Enter atau klik +"
-                       value={inputTag}
-                       onChange={(e) => setInputTag(e.target.value)}
-                       onKeyDown={handleTagInputKeyDown}
-                       className="flex-1"
-                     />
-                     <Button
-                       type="button"
-                       variant="outline"
-                       onClick={addTag}
-                       className="px-3"
-                     >
-                       +
-                     </Button>
-                   </div>
-                   
-                   {tags.length > 0 && (
-                     <div className="flex flex-wrap gap-2">
-                       {tags.map((tag, index) => (
-                         <div key={index} className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
-                           <span>{tag}</span>
-                           <button
-                             type="button"
-                             onClick={() => removeTag(tag)}
-                             className="ml-1 hover:text-red-600 text-blue-600"
-                           >
-                             ×
-                           </button>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                 </div>
-               </div>
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={editingCategory ? handleUpdate : handleCreate}
-                  className="flex items-center space-x-2"
-                >
-                  <span>{editingCategory ? 'Update' : 'Simpan'}</span>
-                </Button>
-                <Button variant="outline" onClick={handleCancel}>
-                  Batal
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Search */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Cari kategori..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {/* Categories List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCategories.map((category) => (
-            <Card key={category.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{category.category_name}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(category)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(category.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <FolderOpen className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+                    <p className="text-sm text-gray-600">Total Kategori</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {category.description || 'Tidak ada deskripsi'}
-                </p>
-                                 <div className="flex items-center gap-2 mb-3">
-                   <Badge variant="secondary">ID: {category.id}</Badge>
-                   <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                     {category.sops ? category.sops.length : 0} SOP
-                   </Badge>
-                 </div>
-                 
-                 {category.tags && category.tags.length > 0 && (
-                   <div className="flex flex-wrap gap-1 mb-3">
-                     {category.tags.map((tag, index) => (
-                       <Badge key={index} variant="outline" className="text-xs bg-gray-50 text-gray-700">
-                         {tag}
-                       </Badge>
-                     ))}
-                   </div>
-                 )}
-                {category.sops && category.sops.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    <p className="font-medium mb-1">SOP dalam kategori ini:</p>
-                    <div className="space-y-1">
-                      {category.sops.slice(0, 3).map((sop) => (
-                        <div key={sop.id} className="flex items-center gap-2">
-                          <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-                          <span className="truncate">{sop.title}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {sop.status}
-                          </Badge>
-                        </div>
-                      ))}
-                      {category.sops.length > 3 && (
-                        <p className="text-xs text-muted-foreground">
-                          +{category.sops.length - 3} SOP lainnya
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {filteredCategories.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">
-              {searchTerm ? 'Tidak ada kategori ditemukan' : 'Belum ada kategori'}
-            </h3>
-            <p className="text-muted-foreground">
-              {searchTerm ? 'Coba ubah kata kunci pencarian.' : 'Mulai dengan menambahkan kategori pertama.'}
-            </p>
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <FileText className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {categories.reduce((total, cat) => total + (cat.sops?.length || 0), 0)}
+                    </p>
+                    <p className="text-sm text-gray-600">Total SOP</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-xl">
+                    <Tag className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {categories.reduce((total, cat) => total + (cat.tags?.length || 0), 0)}
+                    </p>
+                    <p className="text-sm text-gray-600">Total Tags</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
+
+          {/* Action Bar */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  placeholder="Cari kategori berdasarkan nama atau deskripsi..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                />
+              </div>
+            </div>
+            <Button 
+              onClick={() => setIsCreateOpen(true)}
+              className="h-12 px-6 text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Tambah Kategori
+            </Button>
+          </div>
+
+          {/* Create/Edit Form */}
+          {(isCreateOpen || editingCategory) && (
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-8">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center space-x-3 text-2xl">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    {editingCategory ? <Edit className="w-6 h-6 text-blue-600" /> : <Plus className="w-6 h-6 text-blue-600" />}
+                  </div>
+                  <span>{editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label htmlFor="category_name" className="text-sm font-semibold text-gray-700">Nama Kategori *</label>
+                    <Input
+                      id="category_name"
+                      name="category_name"
+                      value={formData.category_name}
+                      onChange={handleInputChange}
+                      placeholder="Masukkan nama kategori"
+                      className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <label htmlFor="description" className="text-sm font-semibold text-gray-700">Deskripsi</label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Masukkan deskripsi kategori (opsional)"
+                      rows={3}
+                      className="w-full p-4 border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200 resize-none"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+                    <Tag className="w-4 h-4" />
+                    <span>Tags</span>
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex space-x-3">
+                      <Input
+                        placeholder="Ketik tag dan tekan Enter atau klik +"
+                        value={inputTag}
+                        onChange={(e) => setInputTag(e.target.value)}
+                        onKeyDown={handleTagInputKeyDown}
+                        className="flex-1 h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addTag}
+                        className="h-12 px-6 border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-all duration-200"
+                      >
+                        +
+                      </Button>
+                    </div>
+                    
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {tags.map((tag, index) => (
+                          <div key={index} className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-2 rounded-xl text-sm font-medium">
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              className="ml-1 hover:text-red-600 text-blue-600 transition-colors duration-200"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 pt-4 border-t border-gray-100">
+                  <Button 
+                    onClick={editingCategory ? handleUpdate : handleCreate}
+                    className="h-12 px-8 text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <span>{editingCategory ? 'Update Kategori' : 'Simpan Kategori'}</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleCancel}
+                    className="h-12 px-8 text-base font-medium border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200"
+                  >
+                    Batal
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCategories.map((category) => (
+              <Card key={category.id} className="group border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-blue-100 rounded-xl">
+                        <FolderOpen className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                        {category.category_name}
+                      </CardTitle>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleEdit(category)}
+                        className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDelete(category.id)}
+                        className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {category.description || 'Tidak ada deskripsi'}
+                  </p>
+                  
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200">
+                      ID: {category.id}
+                    </Badge>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <FileText className="w-3 h-3 mr-1" />
+                      {category.sops ? category.sops.length : 0} SOP
+                    </Badge>
+                  </div>
+                  
+                  {category.tags && category.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {category.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                          <Tag className="w-3 h-3 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {category.sops && category.sops.length > 0 && (
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-xs font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                        <FileText className="w-3 h-3" />
+                        <span>SOP dalam kategori ini:</span>
+                      </p>
+                      <div className="space-y-2">
+                        {category.sops.slice(0, 3).map((sop) => (
+                          <div key={sop.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span className="text-xs text-gray-700 truncate flex-1">{sop.title}</span>
+                            <Badge variant="outline" className="text-xs bg-white">
+                              {sop.status}
+                            </Badge>
+                          </div>
+                        ))}
+                        {category.sops.length > 3 && (
+                          <p className="text-xs text-gray-500 text-center py-1">
+                            +{category.sops.length - 3} SOP lainnya
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FolderOpen className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-3">
+                {searchTerm ? 'Tidak ada kategori ditemukan' : 'Belum ada kategori'}
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                {searchTerm ? 'Coba ubah kata kunci pencarian atau buat kategori baru.' : 'Mulai dengan menambahkan kategori pertama untuk mengorganisir SOP Anda.'}
+              </p>
+              {!searchTerm && (
+                <Button 
+                  onClick={() => setIsCreateOpen(true)}
+                  className="h-12 px-8 text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Buat Kategori Pertama
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );
