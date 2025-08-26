@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, ChevronLeft, ChevronRight, Clock, CheckCircle, FileText, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import { authenticatedFetch, isAuthenticated } from '@/lib/auth';
 
 interface APICategory {
   id: number;
@@ -38,6 +39,14 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -55,46 +64,83 @@ export default function UploadPage() {
       try {
         setLoading(true);
         
-        // Fetch categories
-        const categoriesResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories');
-        if (!categoriesResponse.ok) throw new Error('Gagal mengambil data kategori');
-        const categoriesData = await categoriesResponse.json();
-        console.log('Categories API response:', categoriesData);
-        // Extract categories from data property
-        const categoriesArray = categoriesData.data || categoriesData;
-        console.log('Extracted categories array:', categoriesArray);
-        const finalCategories = Array.isArray(categoriesArray) ? categoriesArray : [];
-        console.log('Final categories to set:', finalCategories);
-        setCategories(finalCategories);
+        // Check authentication first
+        if (!isAuthenticated()) {
+          router.push('/login');
+          return;
+        }
         
-        // Fetch pending SOPs
-        const sopsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops');
-        if (sopsResponse.ok) {
-          const sopsData = await sopsResponse.json();
-          const sops = sopsData.data || sopsData;
-          const pending = Array.isArray(sops) ? sops.filter((sop: any) => 
-            sop.status === 'pending' || sop.status === 'Pending Review' || sop.status === 'Draft'
-          ) : [];
-          setPendingSOPs(pending);
+        // Fetch categories with authentication
+        try {
+          const categoriesResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories', {
+            method: 'GET',
+          });
+          console.log('Categories response status:', categoriesResponse.status);
+          
+          if (categoriesResponse.ok) {
+            const categoriesData = await categoriesResponse.json();
+            console.log('Categories API response:', categoriesData);
+            // Extract categories from data property
+            const categoriesArray = categoriesData.data || categoriesData;
+            console.log('Extracted categories array:', categoriesArray);
+            const finalCategories = Array.isArray(categoriesArray) ? categoriesArray : [];
+            console.log('Final categories to set:', finalCategories);
+            setCategories(finalCategories);
+          } else {
+            console.log('Categories fetch failed with status:', categoriesResponse.status);
+            // Use fallback categories
+            setCategories([
+              { id: 1, category_name: 'HR', description: 'Human Resources' },
+              { id: 2, category_name: 'IT', description: 'Information Technology' },
+              { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
+              { id: 4, category_name: 'Produksi', description: 'Production' },
+              { id: 5, category_name: 'Umum', description: 'General' }
+            ]);
+          }
+        } catch (categoriesError) {
+          console.log('Categories fetch error:', categoriesError);
+          // Use fallback categories
+          setCategories([
+            { id: 1, category_name: 'HR', description: 'Human Resources' },
+            { id: 2, category_name: 'IT', description: 'Information Technology' },
+            { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
+            { id: 4, category_name: 'Produksi', description: 'Production' },
+            { id: 5, category_name: 'Umum', description: 'General' }
+          ]);
+        }
+        
+        // Fetch pending SOPs with authentication
+        try {
+          const sopsResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+            method: 'GET',
+          });
+          console.log('SOPs response status:', sopsResponse.status);
+          
+          if (sopsResponse.ok) {
+            const sopsData = await sopsResponse.json();
+            console.log('SOPs API response:', sopsData);
+            const sops = sopsData.data || sopsData;
+            const pending = Array.isArray(sops) ? sops.filter((sop: any) => 
+              sop.status === 'pending' || sop.status === 'Pending Review' || sop.status === 'Draft'
+            ) : [];
+            setPendingSOPs(pending);
+          } else {
+            console.log('SOPs fetch failed with status:', sopsResponse.status);
+            setPendingSOPs([]);
+          }
+        } catch (sopsError) {
+          console.log('SOPs fetch error:', sopsError);
+          setPendingSOPs([]);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        // Set fallback categories if API fails
-        setCategories([
-          { id: 1, category_name: 'HR', description: 'Human Resources' },
-          { id: 2, category_name: 'IT', description: 'Information Technology' },
-          { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
-          { id: 4, category_name: 'Produksi', description: 'Production' },
-          { id: 5, category_name: 'Umum', description: 'General' }
-        ]);
-        setPendingSOPs([]);
+        console.error('Error in fetchData:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -150,10 +196,25 @@ export default function UploadPage() {
         console.log(`${key}:`, value);
       });
 
-      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('jwt_token');
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Token tidak ditemukan. Silakan login ulang.",
+          variant: "destructive"
+        });
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type header - let browser set it with boundary for FormData
+        },
         body: formDataToSend,
-        // Don't set Content-Type header - let browser set it with boundary for FormData
       });
 
       console.log('Response status:', response.status);
@@ -290,11 +351,11 @@ export default function UploadPage() {
                           ))
                         ) : (
                           <>
-                            <SelectItem value="HR">HR</SelectItem>
-                            <SelectItem value="IT">IT</SelectItem>
-                            <SelectItem value="Keuangan">Keuangan</SelectItem>
-                            <SelectItem value="Produksi">Produksi</SelectItem>
-                            <SelectItem value="Umum">Umum</SelectItem>
+                            <SelectItem value="hr">HR</SelectItem>
+                            <SelectItem value="it">IT</SelectItem>
+                            <SelectItem value="keuangan">Keuangan</SelectItem>
+                            <SelectItem value="produksi">Produksi</SelectItem>
+                            <SelectItem value="umum">Umum</SelectItem>
                           </>
                         )}
                       </SelectContent>
@@ -313,11 +374,11 @@ export default function UploadPage() {
                         <SelectValue placeholder="Pilih departemen" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="HR">HR</SelectItem>
-                        <SelectItem value="IT">IT</SelectItem>
-                        <SelectItem value="Keuangan">Keuangan</SelectItem>
-                        <SelectItem value="Marketing">Marketing</SelectItem>
-                        <SelectItem value="Operasional">Operasional</SelectItem>
+                        <SelectItem value="hr">HR</SelectItem>
+                        <SelectItem value="it">IT</SelectItem>
+                        <SelectItem value="keuangan">Keuangan</SelectItem>
+                        <SelectItem value="produksi">Produksi</SelectItem>
+                        <SelectItem value="umum">Umum</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

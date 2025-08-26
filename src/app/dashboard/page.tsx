@@ -1,16 +1,18 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight, Search, Filter, FileText, Eye, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, Filter, FileText, Eye, AlertCircle, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
+import { authenticatedFetch, getUserInfo, logout, isAuthenticated } from '@/lib/auth';
 
 interface APISOP {
   id: number;
@@ -40,6 +42,7 @@ interface APIDivision {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [apiSOPs, setApiSOPs] = useState<APISOP[]>([]);
   const [categories, setCategories] = useState<APICategory[]>([]);
   const [departments, setDepartments] = useState<APIDivision[]>([]);
@@ -49,21 +52,36 @@ export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
+    console.log('Dashboard useEffect triggered');
+    console.log('isAuthenticated():', isAuthenticated());
+    
+    // Check authentication first
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login');
+      router.push('/login');
+      return;
+    }
+    
+    console.log('User is authenticated, proceeding to dashboard');
+    
+    // Get user info from localStorage
+    const user = getUserInfo();
+    console.log('User info from localStorage:', user);
+    setUserInfo(user);
+    
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Fetch SOPs with better error handling
+        // Fetch SOPs with JWT authentication
         let sopsResponse;
         try {
-          sopsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+          sopsResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
           });
         } catch (fetchError) {
           console.error('Network error fetching SOPs:', fetchError);
@@ -81,14 +99,11 @@ export default function DashboardPage() {
         const sops = sopsData.data || sopsData;
         setApiSOPs(Array.isArray(sops) ? sops : []);
         
-        // Fetch Categories with better error handling
+        // Fetch Categories with JWT authentication
         let categoriesResponse;
         try {
-          categoriesResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories', {
+          categoriesResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories', {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
           });
         } catch (fetchError) {
           console.error('Network error fetching categories:', fetchError);
@@ -109,7 +124,7 @@ export default function DashboardPage() {
         
         // Try to fetch Divisions (with fallback)
         try {
-          const divisionsResponse = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/divisions');
+          const divisionsResponse = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/divisions');
           if (divisionsResponse.ok) {
             const divisionsData = await divisionsResponse.json();
             const divs = divisionsData.data || divisionsData;
@@ -280,11 +295,27 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mt-2">
               Kelola dan lihat semua Standard Operating Procedures
             </p>
+            {userInfo && (
+              <div className="flex items-center space-x-2 mt-2">
+                <User className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-muted-foreground">
+                  Welcome, {userInfo.full_name || userInfo.username} ({userInfo.role || 'User'})
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               Total: {apiSOPs.length} SOP
             </span>
+            <Button 
+              variant="outline" 
+              onClick={logout}
+              className="border-red-300 text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
 

@@ -25,7 +25,7 @@ export default function DebugCategoriesPage() {
 
     try {
       console.log('Testing categories API...');
-      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/categories');
+      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories');
       
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);

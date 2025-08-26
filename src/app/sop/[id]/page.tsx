@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Calendar, User, Tag, Share, Download, Edit, Clock, Shield, Crown, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
+import { authenticatedFetch } from '@/lib/auth';
 
 interface APISOP {
   id: number;
@@ -21,6 +22,10 @@ interface APISOP {
   version?: string;
 }
 
+interface SOPPreview {
+  preview_text: string;
+}
+
 interface SOPPageProps {
   params: {
     id: string;
@@ -29,6 +34,7 @@ interface SOPPageProps {
 
 export default function SOPPage({ params }: SOPPageProps) {
   const [sop, setSop] = useState<APISOP | null>(null);
+  const [sopPreview, setSopPreview] = useState<SOPPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,10 +44,28 @@ export default function SOPPage({ params }: SOPPageProps) {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`https://und-mention-inspiration-fast.trycloudflare.com/sops/${params.id}`);
-        if (!response.ok) throw new Error('Gagal mengambil data SOP');
-        const data = await response.json();
-        setSop(data);
+        // Fetch SOP basic data with authentication
+        const sopResponse = await authenticatedFetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops/${params.id}`, {
+          method: 'GET',
+        });
+        if (!sopResponse.ok) throw new Error('Gagal mengambil data SOP');
+        const sopData = await sopResponse.json();
+        setSop(sopData);
+        
+        // Fetch SOP preview content with authentication
+        try {
+          const previewResponse = await authenticatedFetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops/${params.id}/preview`, {
+            method: 'GET',
+          });
+          if (previewResponse.ok) {
+            const previewData = await previewResponse.json();
+            setSopPreview(previewData);
+          } else {
+            console.log('Preview not available, using fallback content');
+          }
+        } catch (previewError) {
+          console.log('Preview fetch failed, using fallback content:', previewError);
+        }
         
       } catch (error) {
         console.error('Error fetching SOP:', error);
@@ -161,64 +185,78 @@ export default function SOPPage({ params }: SOPPageProps) {
                     <div className="space-y-4">
                       <h1 className="text-2xl font-bold text-gray-900"># {sop.title || 'SOP Title'}</h1>
                       
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-800">## Overview</h2>
-                        <p className="text-gray-700 leading-relaxed">
-                          This document outlines the standard procedures for conducting operations and ensuring that all processes are followed correctly and efficiently.
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-800">## Scope</h2>
-                        <p className="text-gray-700 leading-relaxed">
-                          This SOP applies to all operations and procedures within the organization.
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-800">## Prerequisites</h2>
-                        <p className="text-gray-700 leading-relaxed">
-                          Understanding of the application architecture and basic operational procedures.
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-800">## Procedure</h2>
-                        
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gray-800">### 1. Test Case Selection</h3>
-                          <ul className="list-disc list-inside space-y-2 text-gray-700">
-                            <li>Identify areas affected by recent changes</li>
-                            <li>Select relevant test cases from the regression test suite</li>
-                            <li>Prioritize critical functionality and high-risk areas</li>
-                          </ul>
+                      {/* Dynamic SOP Content from API */}
+                      {sopPreview && sopPreview.preview_text ? (
+                        <div className="prose prose-gray max-w-none">
+                          <div 
+                            className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                            dangerouslySetInnerHTML={{ 
+                              __html: sopPreview.preview_text
+                                .replace(/\n\n/g, '<br><br>')
+                                .replace(/\n/g, '<br>')
+                            }}
+                          />
                         </div>
-
+                      ) : (
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gray-800">### 2. Environment Preparation</h3>
-                          <ul className="list-disc list-inside space-y-2 text-gray-700">
-                            <li>Ensure test environment is properly configured</li>
-                            <li>Verify test data availability</li>
-                            <li>Check application deployment status</li>
-                          </ul>
-                        </div>
-
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gray-800">### 3. Test Execution</h3>
-                          <ul className="list-disc list-inside space-y-2 text-gray-700">
-                            <li>Execute automated regression tests first</li>
-                            <li>Perform manual testing for complex scenarios</li>
-                            <li>Document any failures or unexpected behavior</li>
-                          </ul>
-                        </div>
-
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gray-800">### 4. Reporting</h3>
+                          <h2 className="text-xl font-semibold text-gray-800">## Overview</h2>
                           <p className="text-gray-700 leading-relaxed">
-                            Generate comprehensive reports documenting all test results and findings.
+                            {sop.description || 'This document outlines the standard procedures for conducting operations and ensuring that all processes are followed correctly and efficiently.'}
                           </p>
+
+                          <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-800">## Scope</h2>
+                            <p className="text-gray-700 leading-relaxed">
+                              This SOP applies to all operations and procedures within the organization.
+                            </p>
+                          </div>
+
+                          <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-800">## Prerequisites</h2>
+                            <p className="text-gray-700 leading-relaxed">
+                              Understanding of the application architecture and basic operational procedures.
+                            </p>
+                          </div>
+
+                          <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-800">## Procedure</h2>
+                            
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold text-gray-800">### 1. Test Case Selection</h3>
+                              <ul className="list-disc list-inside space-y-2 text-gray-700">
+                                <li>Identify areas affected by recent changes</li>
+                                <li>Select relevant test cases from the regression test suite</li>
+                                <li>Prioritize critical functionality and high-risk areas</li>
+                              </ul>
+                            </div>
+
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold text-gray-800">### 2. Environment Preparation</h3>
+                              <ul className="list-disc list-inside space-y-2 text-gray-700">
+                                <li>Ensure test environment is properly configured</li>
+                                <li>Verify test data availability</li>
+                                <li>Check application deployment status</li>
+                              </ul>
+                            </div>
+
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold text-gray-800">### 3. Test Execution</h3>
+                              <ul className="list-disc list-inside space-y-2 text-gray-700">
+                                <li>Execute automated regression tests first</li>
+                                <li>Perform manual testing for complex scenarios</li>
+                                <li>Document any failures or unexpected behavior</li>
+                              </ul>
+                            </div>
+
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold text-gray-800">### 4. Reporting</h3>
+                              <p className="text-gray-700 leading-relaxed">
+                                Generate comprehensive reports documenting all test results and findings.
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>

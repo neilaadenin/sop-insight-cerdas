@@ -46,12 +46,12 @@ export default function TestAPIPage() {
     setLoading(true);
     
          const sopsResult = await testEndpoint(
-       'https://und-mention-inspiration-fast.trycloudflare.com/sops',
+       'https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops',
        'SOPs'
      );
     
          const categoriesResult = await testEndpoint(
-       'https://und-mention-inspiration-fast.trycloudflare.com/categories',
+       'https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories',
        'Categories'
      );
 
@@ -114,7 +114,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://und-mention-inspiration-fast.trycloudflare.com/sops
+                   https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops
                  </code>
               </div>
               
@@ -165,7 +165,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://und-mention-inspiration-fast.trycloudflare.com/categories
+                   https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories
                  </code>
               </div>
               

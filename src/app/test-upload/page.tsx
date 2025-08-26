@@ -39,7 +39,7 @@ export default function TestUploadPage() {
         division_name: 'Technology'
       });
 
-      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
         method: 'POST',
         body: simpleData
       });
@@ -92,7 +92,7 @@ export default function TestUploadPage() {
         fileSize: file.size
       });
 
-      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
         method: 'POST',
         body: formData
       });
@@ -125,7 +125,7 @@ export default function TestUploadPage() {
     addResult('Testing API endpoint availability...');
 
     try {
-      const response = await fetch('https://und-mention-inspiration-fast.trycloudflare.com/sops', {
+      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
         method: 'GET'
       });
 
