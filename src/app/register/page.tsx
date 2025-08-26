@@ -10,13 +10,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserPlus, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
+import { useDivisions } from '@/hooks/use-dropdown-data';
+import { DynamicDropdown } from '@/components/ui/dynamic-dropdown';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [divisions, setDivisions] = useState<any[]>([]);
+
+  // Use dynamic dropdown hook for divisions
+  const { data: divisions, loading: divisionsLoading, error: divisionsError } = useDivisions();
   const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState({
@@ -42,43 +47,8 @@ export default function RegisterPage() {
     }));
   };
 
-  // Fetch divisions from API
-  useEffect(() => {
-    const fetchDivisions = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/divisions');
-        if (response.ok) {
-          const data = await response.json();
-          const divs = data.data || data;
-          setDivisions(Array.isArray(divs) ? divs : []);
-        } else {
-          // Fallback divisions if API fails
-          setDivisions([
-            { id: 1, division_name: 'HR', description: 'Human Resources' },
-            { id: 2, division_name: 'IT', description: 'Information Technology' },
-            { id: 3, division_name: 'Keuangan', description: 'Finance & Accounting' },
-            { id: 4, division_name: 'Produksi', description: 'Production' },
-            { id: 5, division_name: 'Umum', description: 'General' }
-          ]);
-        }
-      } catch (error) {
-        console.error('Error fetching divisions:', error);
-        // Fallback divisions
-        setDivisions([
-          { id: 1, division_name: 'HR', description: 'Human Resources' },
-          { id: 2, division_name: 'IT', description: 'Information Technology' },
-          { id: 3, division_name: 'Keuangan', description: 'Finance & Accounting' },
-          { id: 4, division_name: 'Produksi', description: 'Production' },
-          { id: 5, division_name: 'Umum', description: 'General' }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDivisions();
-  }, []);
+  // Divisions are now fetched using hooks
+  // No need to fetch them here anymore
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +87,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/auth/register', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -291,18 +261,15 @@ export default function RegisterPage() {
                 <Label htmlFor="division_name" className="text-sm font-semibold text-gray-700">
                   Divisi <span className="text-red-500">*</span>
                 </Label>
-                <Select value={formData.division_name} onValueChange={(value) => handleSelectChange('division_name', value)}>
-                  <SelectTrigger id="division_name" className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200">
-                    <SelectValue placeholder="Pilih divisi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {divisions.map((division) => (
-                      <SelectItem key={division.id} value={division.division_name}>
-                        {division.division_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <DynamicDropdown
+                  value={formData.division_name}
+                  onValueChange={(value) => handleSelectChange('division_name', value)}
+                  placeholder="Pilih divisi"
+                  items={divisions}
+                  loading={divisionsLoading}
+                  error={divisionsError}
+                  className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                />
               </div>
 
               <Button

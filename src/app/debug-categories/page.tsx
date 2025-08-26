@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 interface APICategory {
   id: number;
@@ -25,7 +26,7 @@ export default function DebugCategoriesPage() {
 
     try {
       console.log('Testing categories API...');
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories');
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES));
       
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);

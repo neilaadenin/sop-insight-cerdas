@@ -8,6 +8,7 @@ import { ArrowLeft, FileText, Calendar, User, Tag, Share, Download, Edit, Clock,
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { authenticatedFetch } from '@/lib/auth';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 interface APISOP {
   id: number;
@@ -45,7 +46,7 @@ export default function SOPPage({ params }: SOPPageProps) {
         setError(null);
         
         // Fetch SOP basic data with authentication
-        const sopResponse = await authenticatedFetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops/${params.id}`, {
+        const sopResponse = await authenticatedFetch(`${getApiUrl(API_CONFIG.ENDPOINTS.SOPS)}/${params.id}`, {
           method: 'GET',
         });
         if (!sopResponse.ok) throw new Error('Gagal mengambil data SOP');
@@ -54,7 +55,7 @@ export default function SOPPage({ params }: SOPPageProps) {
         
         // Fetch SOP preview content with authentication
         try {
-          const previewResponse = await authenticatedFetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops/${params.id}/preview`, {
+          const previewResponse = await authenticatedFetch(`${getApiUrl(API_CONFIG.ENDPOINTS.SOPS)}/${params.id}/preview`, {
             method: 'GET',
           });
           if (previewResponse.ok) {

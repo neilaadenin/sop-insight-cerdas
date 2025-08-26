@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 export default function TestUploadPage() {
   const [testResults, setTestResults] = useState<any[]>([]);
@@ -39,7 +40,7 @@ export default function TestUploadPage() {
         division_name: 'Technology'
       });
 
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
         method: 'POST',
         body: simpleData
       });
@@ -92,7 +93,7 @@ export default function TestUploadPage() {
         fileSize: file.size
       });
 
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
         method: 'POST',
         body: formData
       });
@@ -125,7 +126,7 @@ export default function TestUploadPage() {
     addResult('Testing API endpoint availability...');
 
     try {
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
         method: 'GET'
       });
 

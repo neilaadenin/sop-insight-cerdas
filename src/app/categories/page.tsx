@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Search, FolderOpen, Tag, FileText, Users, Calendar } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 interface APICategory {
   id: number;
@@ -42,7 +43,7 @@ export default function CategoriesPage() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories');
+        const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES));
         if (!response.ok) throw new Error('Gagal mengambil data kategori');
         const data = await response.json();
         console.log('Categories API response:', data);
@@ -126,7 +127,7 @@ export default function CategoriesPage() {
     try {
       console.log('Creating category:', formData);
       
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ export default function CategoriesPage() {
       // Try API update first
       let response;
       try {
-        response = await fetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories/${editingCategory.id}`, {
+        response = await fetch(`${getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES)}/${editingCategory.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -256,7 +257,7 @@ export default function CategoriesPage() {
         // Try API delete first
         let response;
         try {
-          response = await fetch(`https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories/${id}`, {
+          response = await fetch(`${getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES)}/${id}`, {
             method: 'DELETE'
           });
         } catch (apiError) {

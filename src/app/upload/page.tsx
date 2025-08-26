@@ -13,6 +13,9 @@ import { Upload, ChevronLeft, ChevronRight, Clock, CheckCircle, FileText, Calend
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import { authenticatedFetch, isAuthenticated } from '@/lib/auth';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
+import { useCategoriesWithAuth, useDivisions } from '@/hooks/use-dropdown-data';
+import { DynamicDropdown } from '@/components/ui/dynamic-dropdown';
 
 interface APICategory {
   id: number;
@@ -34,11 +37,14 @@ export default function UploadPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<APICategory[]>([]);
   const [pendingSOPs, setPendingSOPs] = useState<PendingSOP[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Use dynamic dropdown hooks
+  const { data: categories, loading: categoriesLoading, error: categoriesError } = useCategoriesWithAuth();
+  const { data: divisions, loading: divisionsLoading, error: divisionsError } = useDivisions();
 
   // Check authentication on component mount
   useEffect(() => {
@@ -70,48 +76,12 @@ export default function UploadPage() {
           return;
         }
         
-        // Fetch categories with authentication
-        try {
-          const categoriesResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories', {
-            method: 'GET',
-          });
-          console.log('Categories response status:', categoriesResponse.status);
-          
-          if (categoriesResponse.ok) {
-            const categoriesData = await categoriesResponse.json();
-            console.log('Categories API response:', categoriesData);
-            // Extract categories from data property
-            const categoriesArray = categoriesData.data || categoriesData;
-            console.log('Extracted categories array:', categoriesArray);
-            const finalCategories = Array.isArray(categoriesArray) ? categoriesArray : [];
-            console.log('Final categories to set:', finalCategories);
-            setCategories(finalCategories);
-          } else {
-            console.log('Categories fetch failed with status:', categoriesResponse.status);
-            // Use fallback categories
-            setCategories([
-              { id: 1, category_name: 'HR', description: 'Human Resources' },
-              { id: 2, category_name: 'IT', description: 'Information Technology' },
-              { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
-              { id: 4, category_name: 'Produksi', description: 'Production' },
-              { id: 5, category_name: 'Umum', description: 'General' }
-            ]);
-          }
-        } catch (categoriesError) {
-          console.log('Categories fetch error:', categoriesError);
-          // Use fallback categories
-          setCategories([
-            { id: 1, category_name: 'HR', description: 'Human Resources' },
-            { id: 2, category_name: 'IT', description: 'Information Technology' },
-            { id: 3, category_name: 'Keuangan', description: 'Finance & Accounting' },
-            { id: 4, category_name: 'Produksi', description: 'Production' },
-            { id: 5, category_name: 'Umum', description: 'General' }
-          ]);
-        }
+        // Categories are now fetched using hooks
+        // No need to fetch them here anymore
         
         // Fetch pending SOPs with authentication
         try {
-          const sopsResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+          const sopsResponse = await authenticatedFetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
             method: 'GET',
           });
           console.log('SOPs response status:', sopsResponse.status);
@@ -208,7 +178,7 @@ export default function UploadPage() {
         return;
       }
 
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -334,32 +304,15 @@ export default function UploadPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label htmlFor="category_name" className="text-sm font-semibold text-gray-700">Kategori *</Label>
-                    <Select value={formData.category_name} onValueChange={(value) => setFormData(prev => ({ ...prev, category_name: value }))}>
-                      <SelectTrigger className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200">
-                        <SelectValue placeholder={loading ? "Loading kategori..." : "Pilih kategori"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {loading ? (
-                          <div className="p-2 text-center text-sm text-muted-foreground">
-                            Loading kategori...
-                          </div>
-                        ) : categories.length > 0 ? (
-                          categories.map(category => (
-                            <SelectItem key={category.id} value={category.category_name}>
-                              {category.category_name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <>
-                            <SelectItem value="hr">HR</SelectItem>
-                            <SelectItem value="it">IT</SelectItem>
-                            <SelectItem value="keuangan">Keuangan</SelectItem>
-                            <SelectItem value="produksi">Produksi</SelectItem>
-                            <SelectItem value="umum">Umum</SelectItem>
-                          </>
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <DynamicDropdown
+                      value={formData.category_name}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, category_name: value }))}
+                      placeholder="Pilih kategori"
+                      items={categories}
+                      loading={categoriesLoading}
+                      error={categoriesError}
+                      className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                    />
                     {categories.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         {categories.length} kategori tersedia
@@ -369,18 +322,15 @@ export default function UploadPage() {
 
                   <div className="space-y-3">
                     <Label htmlFor="division_name" className="text-sm font-semibold text-gray-700">Departemen *</Label>
-                    <Select value={formData.division_name} onValueChange={(value) => setFormData(prev => ({ ...prev, division_name: value }))}>
-                      <SelectTrigger className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200">
-                        <SelectValue placeholder="Pilih departemen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hr">HR</SelectItem>
-                        <SelectItem value="it">IT</SelectItem>
-                        <SelectItem value="keuangan">Keuangan</SelectItem>
-                        <SelectItem value="produksi">Produksi</SelectItem>
-                        <SelectItem value="umum">Umum</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <DynamicDropdown
+                      value={formData.division_name}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, division_name: value }))}
+                      placeholder="Pilih departemen"
+                      items={divisions}
+                      loading={divisionsLoading}
+                      error={divisionsError}
+                      className="h-12 text-base border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 rounded-xl transition-all duration-200"
+                    />
                   </div>
                 </div>
 

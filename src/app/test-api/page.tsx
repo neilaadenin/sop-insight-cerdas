@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 export default function TestAPIPage() {
   const [loading, setLoading] = useState(false);
@@ -46,12 +47,12 @@ export default function TestAPIPage() {
     setLoading(true);
     
          const sopsResult = await testEndpoint(
-       'https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops',
+       getApiUrl(API_CONFIG.ENDPOINTS.SOPS),
        'SOPs'
      );
     
          const categoriesResult = await testEndpoint(
-       'https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories',
+       getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES),
        'Categories'
      );
 
@@ -114,7 +115,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops
+                   {getApiUrl(API_CONFIG.ENDPOINTS.SOPS)}
                  </code>
               </div>
               
@@ -165,7 +166,7 @@ export default function TestAPIPage() {
               <div className="text-sm">
                 <strong>Endpoint:</strong><br />
                                  <code className="bg-gray-100 px-2 py-1 rounded text-xs break-all">
-                   https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories
+                   {getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES)}
                  </code>
               </div>
               

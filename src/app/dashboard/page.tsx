@@ -13,6 +13,9 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
 import { authenticatedFetch, getUserInfo, logout, isAuthenticated } from '@/lib/auth';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
+import { useCategoriesWithAuth, useDivisions } from '@/hooks/use-dropdown-data';
+import { DynamicDropdown } from '@/components/ui/dynamic-dropdown';
 
 interface APISOP {
   id: number;
@@ -44,8 +47,6 @@ interface APIDivision {
 export default function DashboardPage() {
   const router = useRouter();
   const [apiSOPs, setApiSOPs] = useState<APISOP[]>([]);
-  const [categories, setCategories] = useState<APICategory[]>([]);
-  const [departments, setDepartments] = useState<APIDivision[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,6 +54,10 @@ export default function DashboardPage() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [userInfo, setUserInfo] = useState<any>(null);
+
+  // Use dynamic dropdown hooks
+  const { data: categories, loading: categoriesLoading, error: categoriesError } = useCategoriesWithAuth();
+  const { data: departments, loading: departmentsLoading, error: departmentsError } = useDivisions();
 
   useEffect(() => {
     console.log('Dashboard useEffect triggered');
@@ -80,7 +85,7 @@ export default function DashboardPage() {
         // Fetch SOPs with JWT authentication
         let sopsResponse;
         try {
-          sopsResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/sops', {
+          sopsResponse = await authenticatedFetch(getApiUrl(API_CONFIG.ENDPOINTS.SOPS), {
             method: 'GET',
           });
         } catch (fetchError) {
@@ -99,62 +104,14 @@ export default function DashboardPage() {
         const sops = sopsData.data || sopsData;
         setApiSOPs(Array.isArray(sops) ? sops : []);
         
-        // Fetch Categories with JWT authentication
-        let categoriesResponse;
-        try {
-          categoriesResponse = await authenticatedFetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/categories', {
-            method: 'GET',
-          });
-        } catch (fetchError) {
-          console.error('Network error fetching categories:', fetchError);
-          throw new Error(`Network error: ${fetchError instanceof Error ? fetchError.message : 'Failed to connect to server'}`);
-        }
-        
-        if (!categoriesResponse.ok) {
-          throw new Error(`HTTP ${categoriesResponse.status}: ${categoriesResponse.statusText}`);
-        }
-        
-        const categoriesData = await categoriesResponse.json();
-        console.log('Categories API response:', categoriesData);
-        
-        // Handle the actual API response structure
-        const cats = categoriesData.data || categoriesData;
-        const categoriesArray = Array.isArray(cats) ? cats : [];
-        setCategories(categoriesArray);
-        
-        // Try to fetch Divisions (with fallback)
-        try {
-          const divisionsResponse = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/divisions');
-          if (divisionsResponse.ok) {
-            const divisionsData = await divisionsResponse.json();
-            const divs = divisionsData.data || divisionsData;
-            const divisionsArray = Array.isArray(divs) ? divs : [];
-            setDepartments(divisionsArray);
-          } else {
-            // If divisions API fails, create a fallback
-            setDepartments([
-              { id: 1, division_name: 'IT', description: 'Information Technology' },
-              { id: 2, division_name: 'HR', description: 'Human Resources' },
-              { id: 3, division_name: 'Finance', description: 'Finance & Accounting' }
-            ]);
-          }
-        } catch (divisionsError) {
-          console.warn('Divisions API failed, using fallback:', divisionsError);
-          // Fallback divisions
-          setDepartments([
-            { id: 1, division_name: 'IT', description: 'Information Technology' },
-            { id: 2, division_name: 'HR', description: 'Human Resources' },
-            { id: 3, division_name: 'Finance', description: 'Finance & Accounting' }
-          ]);
-        }
+        // Categories and divisions are now fetched using hooks
+        // No need to fetch them here anymore
         
       } catch (error) {
         console.error('Error fetching data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         setError(`Gagal mengambil data dari server: ${errorMessage}`);
         setApiSOPs([]);
-        setCategories([]);
-        setDepartments([]);
       } finally {
         setLoading(false);
       }
@@ -167,14 +124,14 @@ export default function DashboardPage() {
   const getCategoryName = (categoryId: number | undefined) => {
     if (!categoryId) return 'Uncategorized';
     const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.category_name : 'Uncategorized';
+    return category ? category.name : 'Uncategorized';
   };
 
   // Helper function to get division name by ID
   const getDivisionName = (divisionId: number | undefined) => {
     if (!divisionId) return 'Unknown';
     const division = departments.find(div => div.id === divisionId);
-    return division ? division.division_name : 'Unknown';
+    return division ? division.name : 'Unknown';
   };
 
   const getStatusBadge = (status: string) => {
@@ -335,33 +292,29 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex gap-2">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Kategori</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category.id} value={category.category_name}>
-                      {category.category_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <DynamicDropdown
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+                placeholder="Kategori"
+                items={categories}
+                loading={categoriesLoading}
+                error={categoriesError}
+                className="w-40"
+                showAllOption={true}
+                allOptionLabel="Semua Kategori"
+              />
               
-              <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Departemen" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Departemen</SelectItem>
-                  {departments.map(dept => (
-                    <SelectItem key={dept.id} value={dept.division_name}>
-                      {dept.division_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <DynamicDropdown
+                value={selectedDepartment}
+                onValueChange={setSelectedDepartment}
+                placeholder="Departemen"
+                items={departments}
+                loading={departmentsLoading}
+                error={departmentsError}
+                className="w-40"
+                showAllOption={true}
+                allOptionLabel="Semua Departemen"
+              />
               
               <Button variant="outline" onClick={resetFilters}>
                 Reset

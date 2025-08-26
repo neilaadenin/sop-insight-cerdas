@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { getApiUrl, API_CONFIG } from '@/lib/config';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function LoginPage() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('password', formData.password);
 
-      const response = await fetch('https://glasgow-favors-hazard-exercises.trycloudflare.com/api/auth/login', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
